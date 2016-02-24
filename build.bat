@@ -64,16 +64,16 @@ endlocal
 goto:eof
 
 :usage
-REM @echo "%~1" is null
-REM @echo This script needs these env variables:
-REM @echo 	generator:		Cmake generator
-REM @echo 	JAVA_HOME_32:		Java home 32 bit
-REM @echo 	JAVA_HOME_64:		Java home 64 bit
-REM @echo	INFINISPAN_VERSION:	Version for the Infinispan server
-REM @echo 	version.1major:		Major version
-REM @echo 	version.2minor:		Minor
-REM @echo 	version.3micro:		Micro
-REM @echo 	version.4qualifier:	(Qualifier Final,SNAPSHOT, Beta...)
+@echo "%~1" is null
+@echo This script needs these env variables:
+@echo 	generator:		Cmake generator
+@echo 	JAVA_HOME_32:		Java home 32 bit
+@echo 	JAVA_HOME_64:		Java home 64 bit
+@echo 	INFINISPAN_VERSION:	Version for the Infinispan server
+@echo 	version.1major:		Major version
+@echo 	version.2minor:		Minor
+@echo 	version.3micro:		Micro
+@echo 	version.4qualifier:	(Qualifier Final,SNAPSHOT, Beta...)
 ()
     exit /b 2
 
