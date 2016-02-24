@@ -43,6 +43,7 @@ if "%arch%" == "64" (
 
 set PATH=%JAVA_HOME%\bin;%PATH%
 echo "Using JAVA_HOME=%JAVA_HOME%"
+echo "PATH=%PATH%"
 
 if exist %build_dir% rmdir %build_dir% /s /q
 mkdir %build_dir%
@@ -51,13 +52,13 @@ cd %build_dir%
 cmake -G "%full_generator%" -DCPACK_PACKAGE_VERSION_MAJOR=%version.1major% -DCPACK_PACKAGE_VERSION_MINOR=%version.2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version.3micro%.%version.4qualifier%" -DSWIG_DIR=%SWIG_DIR% -DSWIG_EXECUTABLE=%SWIG_EXECUTABLE% -DMVN_PROGRAM=%MVN_PROGRAM% ..
 if %errorlevel% neq 0 goto fail
 
-cmake --build . --config Debug
+cmake --build . --config RelWithDebInfo
 if %errorlevel% neq 0 goto fail
 
 ctest -V --timeout 3000
 if %errorlevel% neq 0 goto fail
 
-cpack -G ZIP -C Debug -DCPACK_PACKAGE_VERSION_MAJOR=%version.1major% -DCPACK_PACKAGE_VERSION_MINOR=%version.2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version.3micro%.%version.4qualifier%"
+cpack -G ZIP -C RelWithDebInfo -DCPACK_PACKAGE_VERSION_MAJOR=%version.1major% -DCPACK_PACKAGE_VERSION_MINOR=%version.2minor% -DCPACK_PACKAGE_VERSION_PATCH="%version.3micro%.%version.4qualifier%"
 if %errorlevel% neq 0 goto fail
 
 endlocal
