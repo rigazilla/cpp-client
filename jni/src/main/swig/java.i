@@ -132,6 +132,7 @@
 %ignore goAsync;
 %ignore putAllAsync;
 %ignore replaceWithVersionAsync;
+%ignore removeWithVersionAsync;
 
 //%shared_ptr(RelayShrPointer)
 
