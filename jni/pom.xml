@@ -11,13 +11,13 @@
    </parent>
    <groupId>org.infinispan</groupId>
    <artifactId>infinispan-client-hotrod-jni</artifactId>
-   <version>@HOTROD_VERSION@</version>
+   <version>8.4.0-redhat-SNAPSHOT</version>
    <packaging>jar</packaging>
    <name>Infinispan HotRod JNI Wrapper</name>
    <description>Infinispan HotRod JNI Wrapper</description>
 
    <properties>
-      <version.org.infinispan>8.3.0-redhat-SNAPSHOT</version.org.infinispan>
+      <version.org.infinispan>8.4.0-redhat-SNAPSHOT</version.org.infinispan>
       <version.org.jboss.logging.processor>1.1.0.Final-redhat-1</version.org.jboss.logging.processor>
       <version.org.jboss.jbossts>4.17.24.Final</version.org.jboss.jbossts>
       <version.org.testng>6.8</version.org.testng>
