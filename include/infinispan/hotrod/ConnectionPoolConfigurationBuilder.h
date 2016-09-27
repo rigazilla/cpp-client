@@ -32,6 +32,7 @@ class ConnectionPoolConfigurationBuilder
         m_testOnReturn(false),
         m_testWhileIdle(true) {}
     virtual void validate() {}
+    virtual ~ConnectionPoolConfigurationBuilder() {}
 
     /**
        * Specifies what happens when asking for a connection from a server's pool, and that pool is
