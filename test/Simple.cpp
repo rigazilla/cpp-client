@@ -29,7 +29,7 @@ namespace infinispan {
                     return new MyRoundRobinBalancingStrategy();
                 }
 
-                void setServers(const std::vector<ServerNameId> &s) {
+                void setServers(const std::vector<transport::InetSocketAddress> &s) {
                     servers = s;
                     // keep the old index if possible so that we don't produce more requests for the first server
                     if (index >= servers.size()) {
@@ -39,15 +39,15 @@ namespace infinispan {
 
                 ~MyRoundRobinBalancingStrategy() { }
 
-                const ServerNameId &getServerByIndex(size_t pos) {
-                    const ServerNameId &server = servers[pos];
+                const transport::InetSocketAddress &getServerByIndex(size_t pos) {
+                    const transport::InetSocketAddress &server = servers[pos];
                     return server;
                 }
             private:
-                std::vector<ServerNameId> servers;
+                std::vector<transport::InetSocketAddress> servers;
                 size_t index;
-                const ServerNameId &nextServer() {
-                    const ServerNameId &server = getServerByIndex(index++);
+                const transport::InetSocketAddress &nextServer() {
+                    const transport::InetSocketAddress &server = getServerByIndex(index++);
                     if (index >= servers.size()) {
                         index = 0;
                     }
@@ -426,7 +426,8 @@ int main(int argc, char** argv) {
 	std::cout << "Tests for CacheManager" << std::endl;
     {
         ConfigurationBuilder builder;
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
+        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
 //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
         builder.balancingStrategyProducer(nullptr);
         RemoteCacheManager cacheManager(builder.build(), false);
@@ -467,7 +468,8 @@ int main(int argc, char** argv) {
     std::cout << "Basic Test with BasicMarshaller" << std::endl;
     {
         ConfigurationBuilder builder;
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
+        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
 //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
         builder.balancingStrategyProducer(nullptr);
         RemoteCacheManager cacheManager(builder.build(), false);
@@ -525,7 +527,8 @@ int main(int argc, char** argv) {
         ConfigurationBuilder builder;
         //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
                 builder.balancingStrategyProducer(nullptr);
-        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
+        builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
+        builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
         RemoteCacheManager cacheManager(builder.build(), false);
         JBasicMarshaller<std::string> *km = new JBasicMarshaller<std::string>();
         JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();

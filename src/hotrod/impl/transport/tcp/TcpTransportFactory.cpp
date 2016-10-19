@@ -1,6 +1,5 @@
 #include <infinispan/hotrod/exceptions.h>
 #include <infinispan/hotrod/InetSocketAddress.h>
-#include <infinispan/hotrod/ServerNameId.h>
 #include "hotrod/impl/transport/tcp/TcpTransportFactory.h"
 #include "hotrod/impl/transport/tcp/TcpTransport.h"
 #include "hotrod/impl/transport/tcp/TransportObjectFactory.h"
@@ -29,9 +28,21 @@ void TcpTransportFactory::start(
 {
 	ScopedLock<Mutex> l(lock);
 	topologyAge = 0;
-    std::vector<ServerConfiguration> configuredServers = configuration.getServersConfiguration();
-    for (std::vector<ServerConfiguration>::const_iterator iter = configuredServers.begin();
-        iter != configuredServers.end(); iter++)
+    transportFactory.reset(new TransportObjectFactory(codec, *this));
+    auto serversMap = configuration.getServersMapConfiguration();
+    std::vector<ServerConfiguration>* configuredServers;
+    if (serversMap.find(Configuration::DEFAULT_CLUSTER_NAME)!=serversMap.end())
+    {
+    	configuredServers = &serversMap[Configuration::DEFAULT_CLUSTER_NAME];
+    	currCluster=Configuration::DEFAULT_CLUSTER_NAME;
+    }
+    else
+    {
+    	configuredServers = &serversMap.begin()->second;
+    	currCluster=serversMap.begin()->first;
+    }
+    for (std::vector<ServerConfiguration>::const_iterator iter = configuredServers->begin();
+        iter != configuredServers->end(); iter++)
     {
         initialServers.push_back(InetSocketAddress(iter->getHostCString(), iter->getPort()));
     }
@@ -46,36 +57,36 @@ void TcpTransportFactory::start(
     }
     topologyInfo = new TopologyInfo(defaultTopologyId, initialServers, configuration);
 
-    transportFactory.reset(new TransportObjectFactory(codec, *this));
 
     createAndPreparePool();
 
-    //  update map conversion ServerIdentity/INetSocketAddress
-    std::vector<ServerNameId> serverNames;
-    for (std::vector<InetSocketAddress>::const_iterator it =
-            initialServers.begin(); it != initialServers.end(); ++it) {
-    	const ServerNameId tmp = (ServerNameId)*it;
-    	if (serverNameMap.find(tmp)==serverNameMap.end())
-    	{
-    		serverNameMap.insert(std::make_pair(tmp,InetSocketAddress(*it)));
-    	}
-    	serverNames.push_back(tmp);
-    }
-
-    balancer->setServers(serverNames);
+    balancer->setServers(initialServers);
     pingServers();
  }
 
+std::vector<ServerConfiguration> TcpTransportFactory::getNextWorkingServersConfiguration() {
+	for (auto p: configuration.getServersMapConfiguration()){
+		if (p.first==currCluster)
+			continue;
+		for (auto v: p.second)
+		{
+			try
+			{
+				pingExternalServer(InetSocketAddress(v.getHost(), v.getPort()));
+				currCluster=p.first;
+				return p.second;
+			}
+			catch (Exception &e)
+			{
+
+			}
+		}
+	}
+	return std::vector<ServerConfiguration>();
+}
+
 Transport& TcpTransportFactory::getTransport(const std::vector<char>& /*cacheName*/) {
-    const InetSocketAddress* server = NULL;
-    {
-        ScopedLock<Mutex> l(lock);
-        std::map<ServerNameId,InetSocketAddress>::iterator it=serverNameMap.find(balancer->nextServer());
-        if (it==serverNameMap.end()){
-          throw Exception("Server not found!");
-        }
-    	server=&it->second;
-    }
+    const InetSocketAddress* server = &balancer->nextServer();
     return borrowTransportFromPool(*server);
 }
 
@@ -108,6 +119,71 @@ void TcpTransportFactory::invalidateTransport(
 {
     ConnectionPool* pool = getConnectionPool();
     pool->invalidateObject(serverAddress, dynamic_cast<TcpTransport*>(transport));
+}
+
+ClusterStatus TcpTransportFactory::clusterSwitch()
+{
+    auto configuredServers = getNextWorkingServersConfiguration();
+	if (configuredServers.size()==0)
+	{
+		return NOT_SWITCHED;
+	}
+	ScopedLock<Mutex> l(lock);
+	topologyAge = 0;
+    initialServers.clear();
+    for (auto iter = configuredServers.begin();
+        iter != configuredServers.end(); iter++)
+    {
+        initialServers.push_back(InetSocketAddress(iter->getHostCString(), iter->getPort()));
+    }
+
+    auto producerFn=configuration.getBalancingStrategy();
+    if (producerFn!= nullptr) {
+        balancer.reset((*producerFn)());
+    }
+    else
+    {
+        balancer.reset(RoundRobinBalancingStrategy::newInstance());
+    }
+    topologyInfo->updateServers(initialServers);
+
+    createAndPreparePool();
+
+    balancer->setServers(initialServers);
+    pingServers();
+    return SWITCHED;
+}
+
+ClusterStatus TcpTransportFactory::clusterSwitch(std::string clusterName)
+{
+	auto servers=configuration.getServersMapConfiguration();
+	if (servers.find(clusterName)==servers.end())
+		return NOT_SWITCHED;
+    auto configuredServers = servers[clusterName];
+	ScopedLock<Mutex> l(lock);
+	topologyAge = 0;
+    initialServers.clear();
+    for (auto iter = configuredServers.begin();
+        iter != configuredServers.end(); iter++)
+    {
+        initialServers.push_back(InetSocketAddress(iter->getHostCString(), iter->getPort()));
+    }
+
+    auto producerFn=configuration.getBalancingStrategy();
+    if (producerFn!= nullptr) {
+        balancer.reset((*producerFn)());
+    }
+    else
+    {
+        balancer.reset(RoundRobinBalancingStrategy::newInstance());
+    }
+    topologyInfo->updateServers(initialServers);
+
+    createAndPreparePool();
+
+    balancer->setServers(initialServers);
+    pingServers();
+    return SWITCHED;
 }
 
 bool TcpTransportFactory::isTcpNoDelay() {
@@ -154,6 +230,13 @@ void TcpTransportFactory::createAndPreparePool()
     }
 }
 
+void TcpTransportFactory::pingExternalServer(InetSocketAddress s) {
+	transport::TcpTransport& t = transportFactory->makeObject(s);
+	transportFactory->ping(t);
+	transportFactory->destroyObject(s, t);
+}
+
+
 void TcpTransportFactory::pingServers() {
     std::vector<InetSocketAddress> s = topologyInfo->getServers();
     for (std::vector<InetSocketAddress>::const_iterator iter = s.begin(); iter != s.end(); iter++) {
@@ -165,7 +248,7 @@ void TcpTransportFactory::pingServers() {
             transportFactory->ping(*transport);
             connectionPool->returnObject(*iter, *transport);
         } catch (const Exception &e) {
-            TRACE("Initial ping has thrown an exception when pinging %s:%d : %s",
+            ERROR("Initial ping has thrown an exception when pinging %s:%d : %s",
                 iter->getHostname().c_str(), iter->getPort(), e.what());
             // Ping's objective is to retrieve a potentially newer
             // version of the Hot Rod cluster topology, so ignore
@@ -227,20 +310,7 @@ void TcpTransportFactory::updateServers(std::vector<InetSocketAddress>& newServe
     // failed servers) are in the pool now. But after this, the pool won't be asked for connections to failed servers,
     // as the balancer will only know about the active servers
 
-    //3. update map conversion ServerIdentity/INetSocketAddress
-    std::vector<ServerNameId> newServerNames;
-    for (std::vector<InetSocketAddress>::const_iterator it =
-            newServers.begin(); it != newServers.end(); ++it) {
-    	const ServerNameId tmp = (ServerNameId)*it;
-    	if (serverNameMap.find(tmp)==serverNameMap.end())
-    	{
-    		serverNameMap.insert(std::make_pair(tmp,InetSocketAddress(*it)));
-    	}
-    	newServerNames.push_back(tmp);
-    }
-
-    topologyInfo->updateServers(newServers);
-    balancer->setServers(newServerNames);
+    balancer->setServers(newServers);
 
     //3. Now just remove failed servers
     for (std::vector<InetSocketAddress>::const_iterator it =

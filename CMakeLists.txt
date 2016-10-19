@@ -2,8 +2,9 @@ cmake_minimum_required (VERSION 2.6)
 
 project (infinispan-hotrod-cpp C CXX)
 IF (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
-  cmake_policy(SET CMP0054 OLD)
+cmake_policy(SET CMP0054 OLD)
 ENDIF (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 3.1)
+
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     # require at least gcc 4.8
@@ -115,6 +116,7 @@ else (WIN32 AND NOT CYGWIN)
   set (platform_libs pthread rt)
 endif(WIN32 AND NOT CYGWIN)
 
+
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(DLLEXPORT "HR_PROTO_EXPORT=__attribute__ ((visibility (\"default\")))")
   set(DLLEXPORT_STATIC "HR_PROTO_EXPORT= ")
@@ -188,7 +190,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
     if (DEFINED HOTROD_USE_CMAKE_PREFIX)
         set(CMAKE_PREFIX_PATH "${HOTROD_PREBUILT_LIB_DIR}")
         message("---- Searching in prefix: ${CMAKE_PREFIX_PATH}")
-    
+
         find_program(PROTOC_EXECUTABLE NAMES protoc)
         if("${PROTOC_EXECUTABLE}" STREQUAL "PROTOC_EXECUTABLE-NOTFOUND")
             message(FATAL_ERROR "Cannot find Protobuf compiler executable in directory '${HOTROD_PREBUILT_LIB_DIR}/bin'.")
@@ -196,7 +198,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
             message("-- Found Protobuf compiler executable: ${PROTOC_EXECUTABLE}")
             set (PROTOBUF_PROTOC_EXECUTABLE ${PROTOC_EXECUTABLE})
         endif("${PROTOC_EXECUTABLE}" STREQUAL "PROTOC_EXECUTABLE-NOTFOUND")
-        
+
         # On Windows Protobuf libraries have a "lib" prefix
         if(WIN32)
             SET(CMAKE_FIND_LIBRARY_PREFIXES "lib")
@@ -246,26 +248,25 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         include_directories(${INCLUDE_FILES_DIR})
     
         find_library(HOTROD_LIBRARY NAMES hotrod PATHS ${HOTROD_PREBUILT_LIB_DIR} NO_DEFAULT_PATH)
-        if("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
-            message(FATAL_ERROR "Cannot find HotRod dynamic library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-        else("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
+    if("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
+        message(FATAL_ERROR "Cannot find HotRod dynamic library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+    else("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
             message("-- Found HotRod dynamic library: ${HOTROD_LIBRARY}")
-            add_library(hotrod SHARED IMPORTED GLOBAL)
-            set_target_properties(hotrod PROPERTIES IMPORTED_LOCATION ${HOTROD_LIBRARY})
-            set_target_properties(hotrod PROPERTIES IMPORTED_IMPLIB ${HOTROD_LIBRARY})
-            # Copy pre-built libraries to the build directory
-            add_custom_target(copyhrlibs ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${HOTROD_PREBUILT_LIB_DIR} ${CMAKE_CFG_INTDIR})
-        endif("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
-    
-        find_library(HOTROD_STATIC_LIBRARY NAMES hotrod-static PATHS ${HOTROD_PREBUILT_LIB_DIR})
-        if("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
-            message(FATAL_ERROR "Cannot find HotRod static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-        else("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
+        add_library(hotrod SHARED IMPORTED GLOBAL)
+        set_target_properties(hotrod PROPERTIES IMPORTED_LOCATION ${HOTROD_LIBRARY})
+        set_target_properties(hotrod PROPERTIES IMPORTED_IMPLIB ${HOTROD_LIBRARY})
+        # Copy pre-built libraries to the build directory
+        add_custom_target(copyhrlibs ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${HOTROD_PREBUILT_LIB_DIR} ${CMAKE_CFG_INTDIR})
+    endif("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
+    find_library(HOTROD_STATIC_LIBRARY NAMES hotrod-static PATHS ${HOTROD_PREBUILT_LIB_DIR})
+    if("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
+        message(FATAL_ERROR "Cannot find HotRod static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
+    else("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
             message("-- Found HotRod static library: ${HOTROD_STATIC_LIBRARY}")
-            add_library(hotrod-static STATIC IMPORTED GLOBAL)
-            set_target_properties(hotrod-static PROPERTIES IMPORTED_LOCATION ${HOTROD_STATIC_LIBRARY})
-        endif("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
-    
+        add_library(hotrod-static STATIC IMPORTED GLOBAL)
+        set_target_properties(hotrod-static PROPERTIES IMPORTED_LOCATION ${HOTROD_STATIC_LIBRARY})
+    endif("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
+
         find_library(HOTROD_PROTOBUF_LIBRARY NAMES hotrod_protobuf PATHS ${HOTROD_PREBUILT_LIB_DIR})
         if("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
             message(FATAL_ERROR "Cannot find HotRod Protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
@@ -275,7 +276,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
             set_target_properties(hotrod_protobuf PROPERTIES IMPORTED_LOCATION ${HOTROD_PROTOBUF_LIBRARY})
         endif("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
   
-        find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.a libprotobuf.lib protobuf  PATHS ${HOTROD_PREBUILT_LIB_DIR}
+        find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.a protobuf.lib protobuf  PATHS ${HOTROD_PREBUILT_LIB_DIR}
                 NO_SYSTEM_ENVIRONMENT_PATH NO_DEFAULT_PATH
                 NO_CMAKE_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_DEFAULT_PATH)
         if("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
@@ -301,45 +302,11 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         #    set(PROTOBUF_PROTOC_LIBRARY ${HR_PROTOBUF_PROTOC_LIBRARY})
         #endif("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
 
-        if(MSVC)
-		find_library(SSLEAY32_LIBRARY NAMES ssleay32 PATHS ${HOTROD_PREBUILT_LIB_DIR})
-		if("${SSLEAY32_LIBRARY}" STREQUAL "SSLEAY32_LIBRARY-NOTFOUND")
-            message(FATAL_ERROR "Cannot find ssleay32 library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-    else("${SSLEAY32_LIBRARY}" STREQUAL "SSLEAY32_LIBRARY-NOTFOUND")
-	    message("-- Found ssleay32 static library: ${SSLEAY32_LIBRARY}")
-            add_library(ssleay32 STATIC IMPORTED GLOBAL)
-	    set_target_properties(ssleay32 PROPERTIES IMPORTED_LOCATION ${SSLEAY32_LIBRARY})
-    endif("${SSLEAY32_LIBRARY}" STREQUAL "SSLEAY32_LIBRARY-NOTFOUND")
-
-    find_library(LIBEAY32_LIBRARY NAMES libeay32 PATHS ${HOTROD_PREBUILT_LIB_DIR})
-    if("${LIBEAY32_LIBRARY}" STREQUAL "LIBEAY32_LIBRARY-NOTFOUND")
-            message(FATAL_ERROR "Cannot find libeay32 library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-    else("${LIBEAY32_LIBRARY}" STREQUAL "LIBEAY32_LIBRARY-NOTFOUND")
-	    message("-- Found libeay32 static library: ${LIBEAY32_LIBRARY}")
-	  add_library(libeay32 STATIC IMPORTED GLOBAL)
-	  set_target_properties(libeay32 PROPERTIES IMPORTED_LOCATION ${LIBEAY32_LIBRARY})
-  endif("${LIBEAY32_LIBRARY}" STREQUAL "LIBEAY32_LIBRARY-NOTFOUND")
-        set(OPENSSL_LIBRARIES  ${LIBEAY32_LIBRARY} ${SSLEAY32_LIBRARY})
-find_path(OPENSSL_INCLUDE_DIR
-  NAMES
-    openssl/ssl.h
-  HINTS
-  ${HOTROD_PREBUILT_LIB_DIR}/..
-  PATH_SUFFIXES
-    include
-)
-    if("${OPENSSL_INCLUDE_DIR}" STREQUAL "OPENSSL_INCLUDE_DIR-NOTFOUND")
-            message(FATAL_ERROR "Cannot find openssl/ssl.h file in '${HOTROD_PREBUILT_LIB_DIR}/..'.")
-    else("${OPENSSL_INCLUDE_DIR}" STREQUAL "OPENSSL_INCLUDE_DIR-NOTFOUND")
-	    message("-- Found openssl/ssl.h file in '${OPENSSL_INCLUDE_DIR}'.")
-          include_directories(${OPENSSL_INCLUDE_DIR})
-    endif("${OPENSSL_INCLUDE_DIR}" STREQUAL "OPENSSL_INCLUDE_DIR-NOTFOUND")
-        else(MSVC)
-          find_package(OpenSSL)
-          include_directories(${OPENSSL_INCLUDE_DIR})
-        endif(MSVC)
+	if(NOT DEFINED WIN32)
+            find_package(OpenSSL)
+            include_directories(${OPENSSL_INCLUDE_DIR})
+    endif(NOT DEFINED WIN32)
          
-
         if(UNIX) 
             set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc)
         else(UNIX) 
@@ -351,9 +318,10 @@ else(DEFINED HOTROD_PREBUILT_LIB_DIR)
 find_package(Protobuf REQUIRED)
 
 # OpenSSL support
-find_package(OpenSSL)
-include_directories(${OPENSSL_INCLUDE_DIR})
-
+if(NOT DEFINED WIN32)
+    find_package(OpenSSL)
+    include_directories(${OPENSSL_INCLUDE_DIR})
+endif(NOT DEFINED WIN32)
 include_directories ("${CMAKE_CURRENT_SOURCE_DIR}/include" "${CMAKE_CURRENT_SOURCE_DIR}/src" "${CMAKE_CURRENT_BINARY_DIR}")
 set (INCLUDE_FILES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../include)
 
@@ -374,17 +342,26 @@ set (internal_test_sources
   src/hotrod/test/HashTest.cpp
   src/hotrod/test/ConnectionPoolTest.cpp
 )
+if(WIN32)
+set (socket_impl
+      src/hotrod/impl/transport/tcp/SChannelTcpTransport.cpp
+      src/hotrod/sys/SChannelSocket.cpp
+      )
+else(WIN32)
+set (socket_impl
+      src/hotrod/impl/transport/tcp/SSLTcpTransport.cpp
+      src/hotrod/sys/SSLSocket.cpp
+      )
+endif(WIN32)
 endif(ENABLE_INTERNAL_TESTING)
-
-
 
     set (library_sources
       src/hotrod/api/RemoteCacheManager.cpp
       src/hotrod/api/RemoteCacheBase.cpp
       src/hotrod/api/exceptions.cpp
       src/hotrod/impl/configuration/Configuration.cpp
-      src/hotrod/impl/configuration/ConfigurationBuilder.cpp
       src/hotrod/impl/configuration/ConnectionPoolConfiguration.cpp
+      src/hotrod/impl/configuration/ConfigurationChildBuilder.cpp
       src/hotrod/impl/RemoteCacheManagerImpl.cpp
       src/hotrod/impl/RemoteCacheImpl.cpp
       src/hotrod/impl/Topology.cpp
@@ -428,20 +405,17 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/impl/transport/tcp/ConnectionPool.cpp
       src/hotrod/impl/transport/tcp/InetSocketAddress.cpp
       src/hotrod/impl/transport/tcp/Socket.cpp
-      src/hotrod/impl/transport/tcp/SSLTcpTransport.cpp
       src/hotrod/impl/transport/tcp/TcpTransport.cpp
       src/hotrod/impl/transport/tcp/TcpTransportFactory.cpp
       src/hotrod/impl/transport/tcp/TransportObjectFactory.cpp
       src/hotrod/impl/transport/tcp/RoundRobinBalancingStrategy.cpp
       src/hotrod/sys/Runnable.cpp
       src/hotrod/sys/Log.cpp
-      src/hotrod/sys/SSLSocket.cpp
+      ${socket_impl}
       ${platform_sources}
-      ${internal_test_sources} 
+      ${internal_test_sources}  
       ${CMAKE_BINARY_DIR}/Version.cpp
     )
-
-
 hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS 
   proto/infinispan/hotrod/protobuf/base_types.proto
   proto/org/infinispan/protostream/message-wrapping.proto
@@ -461,6 +435,9 @@ target_include_directories(hotrod_protobuf PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/t
                                      "${PROTOBUF_INCLUDE_DIR}")
 
 configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
+if (MSVC)
+    set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "/wd4244 /wd4267" )
+endif (MSVC) 
     
     # Build a shared library
     add_library (hotrod SHARED ${library_sources})
@@ -486,7 +463,6 @@ configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @O
     target_link_libraries (hotrod-static ${platform_libs}  ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} hotrod_protobuf)
 
 endif(DEFINED HOTROD_PREBUILT_LIB_DIR)
-
 if (NOT DEFINED COMPILER_FLAGS)
     message(FATAL_ERROR "Compiler flags not set for this build type")
 endif (NOT DEFINED COMPILER_FLAGS)
@@ -511,7 +487,6 @@ hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS
   test/query_proto/addressbook.proto
   test/query_proto/bank.proto
 )
-
 
 # TESTS
 
@@ -545,7 +520,11 @@ target_include_directories(queryTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/qu
                                      "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET queryTest PROPERTY CXX_STANDARD 11)
 set_property(TARGET queryTest PROPERTY CXX_STANDARD_REQUIRED ON)
-set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+if (MSVC)
+    set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} /wd4244 /wd4267")
+else (MSVC) 
+    set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+endif (MSVC) 
 set_target_properties(queryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 target_link_libraries (queryTest hotrod hotrod_protobuf  ${PROTOBUF_LIBRARY} ${platform_libs})
 
@@ -555,23 +534,42 @@ target_include_directories(queryTest-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/
 	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
+
 set_property(TARGET queryTest-static PROPERTY CXX_STANDARD 11)
 set_property(TARGET queryTest-static PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties(queryTest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
+if (MSVC)
+set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS} /wd4244 /wd4267")
+else (MSVC) 
 set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
+endif (MSVC) 
 target_link_libraries (queryTest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
-add_executable (simple-tls test/SimpleTLS.cpp)
-target_include_directories(simple-tls PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	"${INCLUDE_FILES_DIR}"
-	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
-                                     "${CMAKE_CURRENT_BINARY_DIR}"
-                                     "${PROTOBUF_INCLUDE_DIR}")
-set_property(TARGET simple-tls PROPERTY CXX_STANDARD 11)
-set_property(TARGET simple-tls PROPERTY CXX_STANDARD_REQUIRED ON)
-set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
-set_target_properties (simple-tls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
-target_link_libraries (simple-tls hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
+if(WIN32)
+    add_executable (simple-schannel test/SimpleSChannel.cpp)
+    target_include_directories(simple-schannel PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+	    "${INCLUDE_FILES_DIR}"
+	    "${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                         "${CMAKE_CURRENT_BINARY_DIR}"
+                                         "${PROTOBUF_INCLUDE_DIR}")
+    set_property(TARGET simple-schannel PROPERTY CXX_STANDARD 11)
+    set_property(TARGET simple-schannel PROPERTY CXX_STANDARD_REQUIRED ON)
+    set_target_properties(simple-schannel PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+    set_target_properties (simple-schannel PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+    target_link_libraries (simple-schannel hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
+else(WIN32)
+    add_executable (simple-tls test/SimpleTLS.cpp)
+    target_include_directories(simple-tls PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
+	    "${INCLUDE_FILES_DIR}"
+	    "${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                         "${CMAKE_CURRENT_BINARY_DIR}"
+                                         "${PROTOBUF_INCLUDE_DIR}")
+    set_property(TARGET simple-tls PROPERTY CXX_STANDARD 11)
+    set_property(TARGET simple-tls PROPERTY CXX_STANDARD_REQUIRED ON)
+    set_target_properties(simple-tls PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
+    set_target_properties (simple-tls PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
+    target_link_libraries (simple-tls hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
+endif(WIN32)
 
 if(ENABLE_INTERNAL_TESTING)
     add_executable (unittest test/Unit.cpp)
@@ -593,7 +591,7 @@ target_include_directories(unittest-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/t
     set_target_properties(unittest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
     set_target_properties (unittest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS}")
     target_link_libraries (unittest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
-endif(ENABLE_INTERNAL_TESTING)
+endif (ENABLE_INTERNAL_TESTING)
 
 add_executable (itest test/InteractiveTest.cpp)
 target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
@@ -639,7 +637,11 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     add_test (start_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone-hotrod-ssl.xml)
     add_test (probe_ssl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
+if(WIN32)
+    add_test (simple-schannel simple-schannel ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem)
+else(WIN32)
     add_test (simple-tls simple-tls ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infinispan-ca.pem)
+endif(WIN32)
     add_test (stop_ssl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
 endif (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.bat")))
 
@@ -686,7 +688,7 @@ set (CPACK_SYSTEM_NAME "${PLATFORM}-${PACKAGE_ARCH}")
 #set (CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 #set (CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
 if(WIN32)
-    set (DOCDIR .)
+set (DOCDIR .)
 else(WIN32)
     set (DOCDIR ${SHARE_INSTALL_PREFIX}/doc/${CMAKE_PROJECT_NAME})
 endif(WIN32)

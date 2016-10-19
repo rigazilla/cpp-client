@@ -15,7 +15,7 @@ class ConnectionPoolConfigurationBuilder;
 class ServerConfigurationBuilder;
 class SslConfigurationBuilder;
 
-class ConfigurationChildBuilder
+class HR_EXTERN ConfigurationChildBuilder
 {
   public:
     ConfigurationChildBuilder(ConfigurationBuilder &builder): m_builder(&builder) {}

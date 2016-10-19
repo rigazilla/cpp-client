@@ -1,8 +1,8 @@
 package org.infinispan.client.hotrod.configuration;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import org.infinispan.client.hotrod.RemoteCacheManager;
@@ -11,10 +11,10 @@ import org.infinispan.client.hotrod.impl.TypedProperties;
 import org.infinispan.client.hotrod.impl.consistenthash.ConsistentHash;
 import org.infinispan.client.hotrod.impl.transport.TransportFactory;
 import org.infinispan.client.hotrod.impl.transport.tcp.RequestBalancingStrategy;
+import org.infinispan.client.hotrod.jni.ServerConfigurationBuilderVector;
 import org.infinispan.commons.configuration.Builder;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.commons.marshall.jboss.GenericJBossMarshaller;
-import org.infinispan.commons.util.Util;
 
 /**
  * ConfigurationBuilder used to generate immutable {@link Configuration} objects to pass to the
@@ -37,7 +37,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
    private Marshaller marshaller;
    private boolean pingOnStartup = true;
    private String protocolVersion = ConfigurationProperties.DEFAULT_PROTOCOL_VERSION;
-   private List<ServerConfigurationBuilder> servers = new ArrayList<ServerConfigurationBuilder>();
+   private Map<String,ServerConfigurationBuilderVector> serversMap = new HashMap<String, ServerConfigurationBuilderVector>();
    private int socketTimeout = ConfigurationProperties.DEFAULT_SO_TIMEOUT;
    private final SslConfigurationBuilder ssl;
    private boolean tcpNoDelay = true;
@@ -69,10 +69,13 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
 
    @Override
    public ServerConfigurationBuilder addServer() {
-      ServerConfigurationBuilder builder = new ServerConfigurationBuilder(this);
-      this.servers.add(builder);
-      return builder;
+	  return new ServerConfigurationBuilder(this,jniConfigurationBuilder.addServer());
    }
+   
+   public ClusterConfigurationBuilder addCluster(String clusterName) {
+	   return new ClusterConfigurationBuilder(this, jniConfigurationBuilder.addCluster(clusterName));	   
+   }
+   
 
    @Override
    public ConfigurationBuilder addServers(String servers) {
@@ -262,7 +265,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
 //      }
       this.pingOnStartup(typed.getBooleanProperty(ConfigurationProperties.PING_ON_STARTUP, pingOnStartup));
       this.protocolVersion(typed.getProperty(ConfigurationProperties.PROTOCOL_VERSION, protocolVersion));
-      this.servers.clear();
+      this.serversMap.clear();
       this.addServers(typed.getProperty(ConfigurationProperties.SERVER_LIST, ""));
       this.socketTimeout(typed.getIntProperty(ConfigurationProperties.SO_TIMEOUT, socketTimeout));
       this.tcpNoDelay(typed.getBooleanProperty(ConfigurationProperties.TCP_NO_DELAY, tcpNoDelay));
@@ -276,21 +279,12 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
 
    @Override
    public void validate() {
-      this.jniConfigurationBuilder.connectionPool().validate();
       this.jniConfigurationBuilder.ssl().validate();
       asyncExecutorFactory.validate();
    }
 
    @Override
    public Configuration create() {
-      List<ServerConfiguration> servers = new ArrayList<ServerConfiguration>();
-      if (this.servers.size() > 0)
-         for (ServerConfigurationBuilder server : this.servers) {
-            servers.add(server.create());
-         }
-      else {
-         servers.add(new ServerConfiguration("127.0.0.1", ConfigurationProperties.DEFAULT_HOTROD_PORT));
-      }
       return new Configuration(this.jniConfigurationBuilder.create());
    }
 
@@ -311,7 +305,6 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
       this.classLoader = new WeakReference<ClassLoader>(template.classLoader());
       this.asyncExecutorFactory.read(template.asyncExecutorFactory());
       this.balancingStrategy = template.balancingStrategy();
-      this.connectionPool.read(template.connectionPool());
       this.connectionTimeout(template.connectionTimeout());
       for (int i = 0; i < consistentHashImpl.length; i++) {
          this.consistentHashImpl[i] = template.consistentHashImpl()[i];
@@ -322,7 +315,7 @@ public class ConfigurationBuilder implements ConfigurationChildBuilder, Builder<
       this.marshallerClass = template.marshallerClass();
       this.pingOnStartup(true);
       this.protocolVersion(template.protocolVersion());
-      this.servers.clear();
+      this.serversMap.clear();
       for (ServerConfiguration server : template.servers()) {
          this.addServer().host(server.host()).port(server.port());
       }

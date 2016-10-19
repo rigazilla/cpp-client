@@ -12,7 +12,14 @@
 #include "infinispan/hotrod/RemoteCacheManager.h"
 #include "infinispan/hotrod/RemoteCache.h"
 #include "infinispan/hotrod/Version.h"
+#if _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4267 4244)
+#endif
 #include "query.pb.h"
+#if _MSC_VER
+#pragma warning(pop)
+#endif
 #include "infinispan/hotrod/QueryUtils.h"
 #include <vector>
 #include <tuple>
@@ -37,7 +44,8 @@ int main(int argc, char** argv) {
     int result=0;
 	std::cout << "Tests for Query" << std::endl;
     ConfigurationBuilder builder;
-    builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222).protocolVersion(Configuration::PROTOCOL_VERSION_24);
+    builder.addServer().host(argc > 1 ? argv[1] : "127.0.0.1").port(argc > 2 ? atoi(argv[2]) : 11222);
+    builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
 //        builder.balancingStrategyProducer(transport::MyRoundRobinBalancingStrategy::newInstance);
     builder.balancingStrategyProducer(nullptr);
     RemoteCacheManager cacheManager(builder.build(), false);

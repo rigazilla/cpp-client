@@ -9,7 +9,6 @@
 
 #include "infinispan/hotrod/defs.h"
 #include "infinispan/hotrod/ImportExport.h"
-#include "Builder.h"
 #include "Configuration.h"
 #include "ConnectionPoolConfigurationBuilder.h"
 #include "ServerConfigurationBuilder.h"
@@ -17,7 +16,19 @@
 
 namespace infinispan {
 namespace hotrod {
-
+class ClusterConfigurationBuilder
+{
+public:
+	ClusterConfigurationBuilder(std::vector<ServerConfigurationBuilder>& servers, ConfigurationBuilder &parent) : servers(servers), m_parent(parent) {}
+	ClusterConfigurationBuilder& addClusterNode(const std::string host, const int port)
+	{
+        servers.push_back(ServerConfigurationBuilder(m_parent).host(host).port(port));
+        return *this;
+	}
+private:
+    std::vector<ServerConfigurationBuilder>& servers;
+    ConfigurationBuilder &m_parent;
+};
 /**
  * ConfigurationBuilder used to generate immutable Configuration objects that are in turn
  * used to configure RemoteCacheManager instances.
@@ -25,7 +36,6 @@ namespace hotrod {
  */
 // Methods on this class cannot be invoked across library boundary, therefore, it can use STL.
 class ConfigurationBuilder
-    : public Builder<Configuration>
 {
   public:
     ConfigurationBuilder():
@@ -43,16 +53,29 @@ class ConfigurationBuilder
         __pragma(warning(suppress:4355))
         sslConfigurationBuilder(*this)
         {}
-    /**
-     * Adds a server to this Configuration. ServerConfigurationBuilder is in turn used
-     * to actually configure a server.
-     *
-     *\return ServerConfigurationBuilder instance to be used for server configuration
-     */
-    ServerConfigurationBuilder& addServer() {
-        m_servers.push_back(ServerConfigurationBuilder(*this));
-        return m_servers[m_servers.size() - 1];
+
+     void validate() {}
+
+    ClusterConfigurationBuilder addCluster(const std::string& clusterName) {
+    		return ClusterConfigurationBuilder(m_serversMap[clusterName],*this);
     }
+
+    /**
+    * Adds a server to this Configuration. ServerConfigurationBuilder is in turn used
+    * to actually configure a server.
+    *
+    *\return ServerConfigurationBuilder instance to be used for server configuration
+    */
+   ServerConfigurationBuilder& addServer() {
+		if (m_serversMap.find(Configuration::DEFAULT_CLUSTER_NAME) == m_serversMap.end())
+	   {
+			m_serversMap[Configuration::DEFAULT_CLUSTER_NAME];
+	   }
+		auto& servers = m_serversMap[Configuration::DEFAULT_CLUSTER_NAME];
+   	   servers.push_back(ServerConfigurationBuilder(*this));
+       return servers[servers.size() - 1];
+   }
+
 
     /**
      * Adds multiple servers to this Configuration. ConfigurationBuilder is in turn used
@@ -204,14 +227,22 @@ class ConfigurationBuilder
      *
      *\return Configuration instance to be used for  RemoteCacheManager configuration
      */
-    virtual Configuration create() {
-        std::vector<ServerConfiguration> servers;
-        if (m_servers.size() > 0) {
-            for (std::vector<ServerConfigurationBuilder>::iterator it = m_servers.begin(); it < m_servers.end(); it++) {
-                servers.push_back(it->create());
-            }
-        } else {
-            servers.push_back(ServerConfigurationBuilder(*this).create());
+    Configuration create() {
+        std::map<std::string,std::vector<ServerConfiguration>> serversMap;
+        for (auto p: m_serversMap)
+        {
+        	std::vector<ServerConfiguration> scVec;
+        	for (auto e : p.second)
+        	{
+        		scVec.push_back(e.create());
+        	}
+        	serversMap.insert(std::make_pair(p.first, scVec));
+        }
+        if (serversMap.size()==0)
+        {
+        	std::vector<ServerConfiguration> scVec;
+        	scVec.push_back(ServerConfigurationBuilder(*this).create());
+			serversMap.insert(std::make_pair(Configuration::DEFAULT_CLUSTER_NAME, scVec));
         }
 
         return Configuration(m_protocolVersion,
@@ -219,7 +250,7 @@ class ConfigurationBuilder
             m_connectionTimeout,
             m_forceReturnValue,
             m_keySizeEstimate,
-            servers,
+            serversMap,
             m_socketTimeout,
             sslConfigurationBuilder.create(),
             m_tcpNoDelay,
@@ -235,7 +266,7 @@ class ConfigurationBuilder
      *
      *\return ConfigurationBuilder instance to be used for further configuration
      */
-    virtual ConfigurationBuilder& read(Configuration& configuration) {
+    ConfigurationBuilder& read(Configuration& configuration) {
         // FIXME: read pool, ssl and server configs
         m_protocolVersion = configuration.getProtocolVersionCString();
         m_connectionTimeout = configuration.getConnectionTimeout();
@@ -248,80 +279,20 @@ class ConfigurationBuilder
         return *this;
     }
 
-    // DEPRECATED: use Configuration::PROTOCOL_VERSION_12 instead
-    HR_EXTERN static const char *PROTOCOL_VERSION_12;
-
   private:
     int m_connectionTimeout;
     bool m_forceReturnValue;
     int m_keySizeEstimate;
     std::string m_protocolVersion;
-    std::vector<ServerConfigurationBuilder> m_servers;
+    std::map<std::string,std::vector<ServerConfigurationBuilder> >m_serversMap;
     int m_socketTimeout;
     bool m_tcpNoDelay;
     int m_valueSizeEstimate;
     int m_maxRetries;
     FailOverRequestBalancingStrategy::ProducerFn m_balancingStrategyProducer;
-
     ConnectionPoolConfigurationBuilder connectionPoolConfigurationBuilder;
     SslConfigurationBuilder sslConfigurationBuilder;
 };
-
-inline ServerConfigurationBuilder &ConfigurationChildBuilder::addServer() {
-    return m_builder->addServer();
-}
-
-inline ConfigurationBuilder &ConfigurationChildBuilder::addServers(const std::string &servers) {
-    return m_builder->addServers(servers);
-}
-
-inline ConnectionPoolConfigurationBuilder &ConfigurationChildBuilder::connectionPool() {
-    return m_builder->connectionPool();
-}
-
-inline ConfigurationBuilder &ConfigurationChildBuilder::connectionTimeout(int connectionTimeout_) {
-    return m_builder->connectionTimeout(connectionTimeout_);
-}
-
-inline ConfigurationBuilder &ConfigurationChildBuilder::forceReturnValues(bool forceReturnValues_) {
-    return m_builder->forceReturnValues(forceReturnValues_);
-}
-
-inline ConfigurationBuilder &ConfigurationChildBuilder::keySizeEstimate(int keySizeEstimate_) {
-    return m_builder->keySizeEstimate(keySizeEstimate_);
-}
-
-inline ConfigurationBuilder &ConfigurationChildBuilder::protocolVersion(const std::string &protocolVersion_) {
-    return m_builder->protocolVersion(protocolVersion_);
-}
-
-inline ConfigurationBuilder &ConfigurationChildBuilder::socketTimeout(int socketTimeout_) {
-    return m_builder->socketTimeout(socketTimeout_);
-}
-
-inline SslConfigurationBuilder &ConfigurationChildBuilder::ssl() {
-    return m_builder->ssl();
-}
-
-inline ConfigurationBuilder &ConfigurationChildBuilder::tcpNoDelay(bool tcpNoDelay_) {
-    return m_builder->tcpNoDelay(tcpNoDelay_);
-}
-
-inline ConfigurationBuilder &ConfigurationChildBuilder::valueSizeEstimate(int valueSizeEstimate_) {
-    return m_builder->valueSizeEstimate(valueSizeEstimate_);
-}
-
-inline ConfigurationBuilder &ConfigurationChildBuilder::maxRetries(int maxRetries_) {
-    return m_builder->maxRetries(maxRetries_);
-}
-inline ConfigurationBuilder &ConfigurationChildBuilder::balancingStrategyProducer(FailOverRequestBalancingStrategy::ProducerFn bsp) {
-    return m_builder->balancingStrategyProducer(bsp);
-}
-
-inline Configuration ConfigurationChildBuilder::build() {
-    return m_builder->build();
-}
-
 
 }} // namespace
 
