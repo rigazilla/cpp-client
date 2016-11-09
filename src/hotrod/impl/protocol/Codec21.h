@@ -16,7 +16,8 @@ class Codec21: public Codec20 {
 public:
     virtual void writeClientListenerParams(transport::Transport& t, const ClientListener& clientListener,
     		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const;
-
+    virtual void writeClientListenerParams(transport::Transport& t, bool includeCurrentState, bool useRawData, std::vector<char> filterName, std::vector<char> converterName,
+        const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const;
     virtual ClientCacheEntryExpiredEvent<std::vector<char>> readExpiredEvent(transport::Transport &transport) const;
 
 protected:

@@ -52,6 +52,8 @@ public:
     CacheTopologyInfo getCacheTopologyInfo();
     void addClientListener(ClientListener&, const std::vector<std::vector<char> >, const std::vector<std::vector<char> >, const std::function<void()> &);
     void removeClientListener(ClientListener&);
+    EnableEventsOnServerResult enableEventsOnServer(std::vector<char> filterName, std::vector<char> converterName, bool includeCurrentState, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams);
+
     void init(operations::OperationsFactory* operationsFactory);
 
     void withFlags(Flag flag);

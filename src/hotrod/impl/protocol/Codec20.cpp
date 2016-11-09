@@ -7,7 +7,7 @@
 #include "hotrod/impl/transport/TransportFactory.h"
 #include "hotrod/sys/Log.h"
 #include "hotrod/sys/Mutex.h"
-
+#include "infinispan/hotrod/ClientEvent.h"
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -267,6 +267,14 @@ void Codec20::writeExpirationParams(transport::Transport& t,uint64_t lifespan, u
     t.writeVInt(mInt);
 }
 
+void Codec20::writeClientListenerParams(transport::Transport& t, bool includeCurrentState, bool useRawData, std::vector<char> filterName, std::vector<char> converterName,
+    const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const
+{
+    t.writeByte((short)(includeCurrentState ? 1 : 0));
+    this->writeNamedFactory(t, filterName, filterFactoryParams);
+    this->writeNamedFactory(t, converterName, converterFactoryParams);
+}
+
 void Codec20::writeClientListenerParams(transport::Transport& t, const ClientListener& clientListener,
 		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const
 {
@@ -345,6 +353,38 @@ ClientCacheEntryRemovedEvent<std::vector<char>> Codec20::readRemovedEvent(transp
 {
 	std::vector<char> key = transport.readArray();
 	return ClientCacheEntryRemovedEvent<std::vector<char>>(key, isRetried);
+}
+
+ClientCacheEventData Codec20::readEventAsData(transport::Transport &transport, uint8_t respOpCode) const
+{
+    ClientCacheEventData ev;
+    ev.listenerId = readEventListenerId(transport);
+    ev.isCustom = readEventIsCustomFlag(transport);
+    ev.isCommandRetried = readEventIsRetriedFlag(transport);
+    ev.eventType = respOpCode;
+
+    if (ev.isCustom != 0)
+    {
+        ev.data = transport.readArray();
+    }
+    else
+    {
+        switch (ev.eventType) {
+        case HotRodConstants::CACHE_ENTRY_CREATED_EVENT_RESPONSE: 
+        case HotRodConstants::CACHE_ENTRY_MODIFIED_EVENT_RESPONSE:
+            ev.key = transport.readArray();
+            ev.version = transport.readLong();
+            break;
+        case HotRodConstants::CACHE_ENTRY_REMOVED_EVENT_RESPONSE:
+        case HotRodConstants::CACHE_ENTRY_EXPIRED_EVENT_RESPONSE:
+            ev.key = transport.readArray();
+            break;
+        default:
+            break;
+        }
+
+    }
+    return ev;
 }
 
 void Codec20::processEvent() const

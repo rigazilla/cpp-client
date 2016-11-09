@@ -6,6 +6,7 @@
 #include "query.pb.h"
 
 #include <iostream>
+#include <memory>
 
 namespace infinispan {
 namespace hotrod {
@@ -164,6 +165,13 @@ CacheTopologyInfo RemoteCacheBase::base_getCacheTopologyInfo() {
 void RemoteCacheBase::base_addClientListener(ClientListener& clientListener, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback)
 {
 	IMPL->addClientListener(clientListener, filterFactoryParam, converterFactoryParams, recoveryCallback);
+}
+
+EnableEventsOnServerResult RemoteCacheBase::base_enableEventsOnServer(std::vector<char> filterName, std::vector<char> converterName, bool includeCurrentState
+    , const std::vector<std::vector<char> > filterFactoryParams, const std::vector<std::vector<char> > converterFactoryParams)
+{
+    std::cerr << "AUUUUUUUUUUUUUUUUU";
+    return IMPL->enableEventsOnServer(filterName, converterName, includeCurrentState, filterFactoryParams, converterFactoryParams);
 }
 
 void RemoteCacheBase::base_removeClientListener(ClientListener& clientListener)

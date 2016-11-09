@@ -63,7 +63,7 @@ class ExecuteCmdOperation;
 class QueryOperation;
 class AddClientListenerOperation;
 class RemoveClientListenerOperation;
-
+class EnableEventsOnServerOperation;
 
 class OperationsFactory
 {
@@ -124,6 +124,7 @@ class OperationsFactory
 
     CacheTopologyInfo getCacheTopologyInfo();
 
+    EnableEventsOnServerOperation* newEnableEventsOnServerOperation(std::vector<char> filterName, std::vector<char> converterName, bool includeCurrentState, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams);
     virtual ~OperationsFactory() { }
 
 private:

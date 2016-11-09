@@ -43,6 +43,9 @@ class ValueUnmarshallerFtor;
 
 class RemoteCacheBase
 {
+public:
+    HR_EXTERN EnableEventsOnServerResult base_enableEventsOnServer(std::vector<char> filterName, std::vector<char> converterName, bool includeCurrentState
+        , const std::vector<std::vector<char> > filterFactoryParams, const std::vector<std::vector<char> > converterFactoryParams);
 protected:
     HR_EXTERN const char *base_getName();
     HR_EXTERN void *base_get(const void *key);
@@ -68,7 +71,7 @@ protected:
     HR_EXTERN std::vector<unsigned char> base_query_char(std::vector<unsigned char> qr, size_t size);
 
 	HR_EXTERN void base_addClientListener(ClientListener &clientListener, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback);
-	HR_EXTERN void base_removeClientListener(ClientListener &clientListener);
+    HR_EXTERN void base_removeClientListener(ClientListener &clientListener);
 
     RemoteCacheBase() {}
     HR_EXTERN void setMarshallers(void* rc, MarshallHelperFn kf, MarshallHelperFn vf, UnmarshallHelperFn ukf, UnmarshallHelperFn uvf);

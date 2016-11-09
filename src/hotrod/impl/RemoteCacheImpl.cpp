@@ -27,6 +27,8 @@
 #include "hotrod/impl/operations/QueryOperation.h"
 #include <hotrod/impl/operations/AddClientListenerOperation.h>
 #include <hotrod/impl/operations/RemoveClientListenerOperation.h>
+#include <hotrod/impl/operations/EnableEventsOnServerOperation.h>
+
 #include <iostream>
 
 namespace infinispan {
@@ -264,6 +266,20 @@ void RemoteCacheImpl::addClientListener(ClientListener& clientListener, const st
 	// TODO: Maybe a good move semantic implementation for Add operation can uniform the code
     auto op = operationsFactory->newAddClientListenerOperation(clientListener, *remoteCacheManager.getListenerNotifier(), filterFactoryParam, converterFactoryParams, recoveryCallback);
     op->execute();
+}
+
+EnableEventsOnServerResult RemoteCacheImpl::enableEventsOnServer(std::vector<char> filterName
+    , std::vector<char> converterName, bool includeCurrentState, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams)
+{
+    EnableEventsOnServerResult result;
+    // Special behaviour for this operation. op will be keep by the dispatcher and reused if needed
+    // so op is not to be destroyed here.
+    // TODO: Maybe a good move semantic implementation for Add operation can uniform the code
+    auto op = operationsFactory->newEnableEventsOnServerOperation(filterName, converterName, includeCurrentState, filterFactoryParam, converterFactoryParams);
+    result.eventDataVector=op->execute();
+    result.isSucceeded = op->isSucceeded;
+    result.transport = op->dedicatedTransport;
+    return result;
 }
 
 void RemoteCacheImpl::removeClientListener(ClientListener& clientListener)

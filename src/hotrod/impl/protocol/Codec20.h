@@ -36,6 +36,8 @@ class Codec20 : public Codec
 
     std::vector<char> returnPossiblePrevValue(transport::Transport& t, uint8_t status, uint32_t flags) const;
     void writeExpirationParams(transport::Transport& t,uint64_t lifespan, uint64_t maxIdle) const;
+    virtual void writeClientListenerParams(transport::Transport& t, bool includeCurrentState, bool useRawData, std::vector<char> filterName, std::vector<char> converterName,
+        const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const;
     virtual void writeClientListenerParams(transport::Transport& t, const ClientListener& clientListener,
     		const std::vector<std::vector<char> > &filterFactoryParams, const std::vector<std::vector<char> > &converterFactoryParams) const;
     void writeNamedFactory(transport::Transport &transport, const std::vector<char> &factoryName, const std::vector<std::vector<char> > & params) const;
@@ -50,7 +52,7 @@ class Codec20 : public Codec
     virtual ClientCacheEntryCreatedEvent<std::vector<char>> readCreatedEvent(transport::Transport &transport, uint8_t isRetried) const;
     virtual ClientCacheEntryModifiedEvent<std::vector<char>> readModifiedEvent(transport::Transport &transport, uint8_t isRetried) const;
     virtual ClientCacheEntryRemovedEvent<std::vector<char>> readRemovedEvent(transport::Transport &transport, uint8_t isRetried) const;
-
+    virtual ClientCacheEventData readEventAsData(transport::Transport &transport, uint8_t respOpCode) const;
     virtual event::EventHeaderParams readEventHeader(transport::Transport& transport) const;
   protected:
     HeaderParams& writeHeader(

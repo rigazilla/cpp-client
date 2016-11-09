@@ -184,6 +184,22 @@ class ClientCacheFailoverEvent : ClientEvent {
 };
 
 
+typedef struct {
+    uint8_t eventType;
+    bool isCustom;
+    std::vector<char> listenerId;
+    std::vector<char> key;
+    uint64_t version;
+    bool isCommandRetried;
+    std::vector<char> data;
+} ClientCacheEventData;
+
+typedef struct {
+    void* transport;
+    bool isSucceeded;
+    std::vector<ClientCacheEventData> eventDataVector;
+} EnableEventsOnServerResult;
+
 } /* namespace event */
 } /* namespace hotrod */
 } /* namespace infinispan */

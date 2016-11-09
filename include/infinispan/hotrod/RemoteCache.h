@@ -964,6 +964,9 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     portable::counting_ptr<Marshaller<V> > valueMarshaller;
 
   friend class RemoteCacheManager;
+public:   
+  // Used by C# client
+  using RemoteCacheBase::base_enableEventsOnServer;
 };
 
 }} // namespace

@@ -23,6 +23,7 @@
 #include "hotrod/impl/operations/QueryOperation.h"
 #include <hotrod/impl/operations/AddClientListenerOperation.h>
 #include <hotrod/impl/operations/RemoveClientListenerOperation.h>
+#include <hotrod/impl/operations/EnableEventsOnServerOperation.h>
 #include "infinispan/hotrod/Flag.h"
 
 #include <cstring>
@@ -173,6 +174,7 @@ uint32_t OperationsFactory::getFlags() {
     flags = 0;
     return result;
 }
+
 AddClientListenerOperation* OperationsFactory::newAddClientListenerOperation(ClientListener& listener, ClientListenerNotifier& listenerNotifier,const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams, const std::function<void()> &recoveryCallback) {
    return new AddClientListenerOperation(codec, transportFactory,
          cacheNameBytes, topologyId, getFlags(), listenerNotifier,
@@ -184,6 +186,11 @@ RemoveClientListenerOperation* OperationsFactory::newRemoveClientListenerOperati
    return new RemoveClientListenerOperation(codec, transportFactory,
 	         cacheNameBytes, topologyId, getFlags(), listenerNotifier,
 	         listener);
+}
+
+EnableEventsOnServerOperation* OperationsFactory::newEnableEventsOnServerOperation(std::vector<char> filterName, std::vector<char> converterName, bool includeCurrentState, const std::vector<std::vector<char> > filterFactoryParam, const std::vector<std::vector<char> > converterFactoryParams) {
+    return new EnableEventsOnServerOperation(codec, transportFactory,
+        cacheNameBytes, topologyId, getFlags(), filterName, converterName, includeCurrentState, filterFactoryParam, converterFactoryParams);
 }
 
 void OperationsFactory::addFlags(uint32_t f) {
