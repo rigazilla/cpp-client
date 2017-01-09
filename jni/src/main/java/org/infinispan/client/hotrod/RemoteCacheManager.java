@@ -76,62 +76,62 @@ public class RemoteCacheManager /* implements BasicCacheContainer */ {
       jniRemoteCacheManager = new org.infinispan.client.hotrod.jni.RemoteCacheManager(config.getJniConfiguration(),
             start);
       marshaller = new org.infinispan.commons.marshall.jboss.GenericJBossMarshaller();
-   }
+    }
 
-   public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache() {
-      return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, "", false);
-   }
+    public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache() {
+        return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, "", false);
+    }
 
-   public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache(boolean forceReturnValue) {
-      return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, "", forceReturnValue);
-   }
+    public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache(boolean forceReturnValue) {
+        return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, "", forceReturnValue);
+    }
 
-   public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache(String cacheName) {
-      return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, cacheName, false);
-   }
+    public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache(String cacheName) {
+        return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, cacheName, false);
+    }
 
-   public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue) {
-      return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, cacheName, forceReturnValue);
-   }
+    public <K, V> org.infinispan.client.hotrod.RemoteCache<K, V> getCache(String cacheName, boolean forceReturnValue) {
+        return new org.infinispan.client.hotrod.impl.RemoteCacheImpl<K, V>(this, cacheName, forceReturnValue);
+    }
 
-   public Marshaller getMarshaller() {
-      return marshaller;
-   }
+    public Marshaller getMarshaller() {
+        return marshaller;
+    }
 
-   public org.infinispan.client.hotrod.jni.RemoteCacheManager getJniManager() {
-      return jniRemoteCacheManager;
-   }
+    public org.infinispan.client.hotrod.jni.RemoteCacheManager getJniManager() {
+        return jniRemoteCacheManager;
+    }
 
-   public boolean isStarted() {
-      return jniRemoteCacheManager.isStarted();
-   }
+    public boolean isStarted() {
+       return jniRemoteCacheManager.isStarted();
+    }
 
-   public void start() {
-      jniRemoteCacheManager.start();
-   }
+    public void start() {
+       jniRemoteCacheManager.start();
+    }
 
-   public void stop() {
-      jniRemoteCacheManager.stop();
-   }
+    public void stop() {
+       jniRemoteCacheManager.stop();
+    }
 
-   public Properties getProperties() {
-      throw new UnsupportedOperationException();
-   }
+    public Properties getProperties() {
+       throw new UnsupportedOperationException();
+    }
 
-   public boolean switchToDefaultCluster() {
-      return jniRemoteCacheManager.switchToDefaultCluster();
-   }
+    public boolean switchToDefaultCluster() {
+       return jniRemoteCacheManager.switchToDefaultCluster();
+    }
 
-   public boolean switchToCluster(String clusterName) {
-      return jniRemoteCacheManager.switchToCluster(clusterName);
-   }
+    public boolean switchToCluster(String clusterName) {
+       return jniRemoteCacheManager.switchToCluster(clusterName);
+    }
 
-   static {
-      try {
-         System.loadLibrary("hotrod");
-      } catch (UnsatisfiedLinkError e) {
-         System.loadLibrary("hotrod32");
-      }
-      System.loadLibrary("hotrod-jni");
-   }
+    static {
+        try {
+            System.loadLibrary("hotrod");
+        } catch (UnsatisfiedLinkError e) {
+            System.loadLibrary("hotrod32");
+        }
+        System.loadLibrary("hotrod-jni");
+    }
 }
