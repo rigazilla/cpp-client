@@ -203,7 +203,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         if(WIN32)
             SET(CMAKE_FIND_LIBRARY_PREFIXES "lib")
         endif(WIN32)
-    
+
         find_library(PROTOBUF_LIBRARY NAMES protobuf)
         if("${PROTOBUF_LIBRARY}" STREQUAL "PROTOBUF_LIBRARY-NOTFOUND")
             message(FATAL_ERROR "Cannot find Protobuf dynamic library in directory '${HOTROD_PREBUILT_LIB_DIR}/lib64 or ${HOTROD_PREBUILT_LIB_DIR}/lib'.")
@@ -212,7 +212,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
             add_library(protobuf SHARED IMPORTED GLOBAL)
             set_target_properties(protobuf PROPERTIES IMPORTED_LOCATION ${PROTOBUF_LIBRARY})
         endif("${PROTOBUF_LIBRARY}" STREQUAL "PROTOBUF_LIBRARY-NOTFOUND")
-    
+
         find_library(PROTOBUF_PROTOC_LIBRARY NAMES protoc)
         if("${PROTOBUF_PROTOC_LIBRARY}" STREQUAL "PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
             message(FATAL_ERROR "Cannot find Protobuf compiler library in directory '${HOTROD_PREBUILT_LIB_DIR}/lib64 or ${HOTROD_PREBUILT_LIB_DIR}/lib'.")
@@ -221,14 +221,14 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
             add_library(protoc SHARED IMPORTED GLOBAL)
             set_target_properties(protoc PROPERTIES IMPORTED_LOCATION ${PROTOBUF_PROTOC_LIBRARY})
         endif("${PROTOBUF_PROTOC_LIBRARY}" STREQUAL "PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
-        
+
         set(PROTOBUF_LIBRARIES ${PROTOBUF_LIBRARY} ${PROTOBUF_PROTOC_LIBRARY})
-        
+
         # On Windows HotRod libraries don't have a "lib" prefix
         if(WIN32)
             SET(CMAKE_FIND_LIBRARY_PREFIXES "")
         endif(WIN32)
-        
+
         find_library(HOTROD_PROTOBUF_LIBRARY NAMES hotrod_protobuf)
         if("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
             message(FATAL_ERROR "Cannot find HotRod protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}/lib64 or ${HOTROD_PREBUILT_LIB_DIR}/lib'.")
@@ -237,16 +237,16 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
             add_library(hotrod_protobuf STATIC IMPORTED GLOBAL)
             set_target_properties(hotrod_protobuf PROPERTIES IMPORTED_LOCATION ${HOTROD_PROTOBUF_LIBRARY})
         endif("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
-  
+
         set (PROTOBUF_INCLUDE_DIR ${HOTROD_PREBUILT_LIB_DIR}/include)
         message("-- Found Protobuf include directory: ${PROTOBUF_INCLUDE_DIR}")
         include_directories(${PROTOBUF_INCLUDE_DIR})
         include_directories(${HOTROD_PREBUILT_LIB_DIR}/include)
-      
+
     else (DEFINED HOTROD_USE_CMAKE_PREFIX)
         set (INCLUDE_FILES_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
         include_directories(${INCLUDE_FILES_DIR})
-    
+
         find_library(HOTROD_LIBRARY NAMES hotrod PATHS ${HOTROD_PREBUILT_LIB_DIR} NO_DEFAULT_PATH)
     if("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
         message(FATAL_ERROR "Cannot find HotRod dynamic library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
@@ -275,9 +275,10 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         else("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
             message("-- Found HotRod Protobuf static library: ${HOTROD_PROTOBUF_LIBRARY}")
         add_library(hotrod_protobuf STATIC IMPORTED GLOBAL)
+            add_library(hotrod_protobuf STATIC IMPORTED GLOBAL)
             set_target_properties(hotrod_protobuf PROPERTIES IMPORTED_LOCATION ${HOTROD_PROTOBUF_LIBRARY})
         endif("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
-  
+
         find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.a libprotobuf.lib protobuf  PATHS ${HOTROD_PREBUILT_LIB_DIR}
                 NO_SYSTEM_ENVIRONMENT_PATH NO_DEFAULT_PATH
                 NO_CMAKE_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_DEFAULT_PATH)
@@ -288,6 +289,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
             add_library(protobuf STATIC IMPORTED GLOBAL)
             set_target_properties(protobuf PROPERTIES IMPORTED_LOCATION ${HR_PROTOBUF_LIBRARY})
         set_target_properties(protobuf PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_LIBRARY})
+            set_target_properties(protobuf PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_LIBRARY})
             set(PROTOBUF_LIBRARY ${HR_PROTOBUF_LIBRARY})
         endif("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
 
@@ -295,12 +297,11 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
             find_package(OpenSSL)
             include_directories(${OPENSSL_INCLUDE_DIR})
         endif(NOT DEFINED WIN32)
-         
-        if(UNIX) 
+        if(UNIX)
             set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc)
-        else(UNIX) 
+        else(UNIX)
             set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc.exe)
-        endif(UNIX) 
+        endif(UNIX)
         set (PROTOBUF_INCLUDE_DIR ${HOTROD_PREBUILT_LIB_DIR}/../include)
     endif (DEFINED HOTROD_USE_CMAKE_PREFIX)
 else(DEFINED HOTROD_PREBUILT_LIB_DIR)
@@ -403,17 +404,17 @@ endif(ENABLE_INTERNAL_TESTING)
       src/hotrod/impl/operations/RemoveClientListenerOperation.cpp
       src/hotrod/impl/event/EventDispatcher.cpp
       ${platform_sources}
-      ${internal_test_sources}  
+      ${internal_test_sources}
       ${CMAKE_BINARY_DIR}/Version.cpp
     )
-hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS 
+hr_protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS
   proto/infinispan/hotrod/protobuf/base_types.proto
   proto/org/infinispan/protostream/message-wrapping.proto
   proto/org/infinispan/query/remote/client/query.proto
 )
 
 include_directories(${PROTOBUF_INCLUDE_DIR})
-    
+
     add_library (hotrod_protobuf STATIC ${PROTO_SRCS})
     set_target_properties(hotrod_protobuf PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
 if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -427,25 +428,25 @@ target_include_directories(hotrod_protobuf PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/t
 configure_file(src/hotrod/impl/Version.cpp.in ${CMAKE_BINARY_DIR}/Version.cpp @ONLY)
 if (MSVC)
     set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "/wd4244 /wd4267" )
-endif (MSVC) 
-    
+endif (MSVC)
+
     # Build a shared library
     add_library (hotrod SHARED ${library_sources})
-    
+
     set_target_properties(hotrod PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
     target_link_libraries (hotrod ${platform_libs}  ${OPENSSL_LIBRARIES} hotrod_protobuf ${PROTOBUF_LIBRARY})
-    
+
     if (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
         set (OUTPUT_NAME_SUFFIX "32")
     else (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
         set (OUTPUT_NAME_SUFFIX "")
     endif (WIN32 AND NOT CMAKE_SIZEOF_VOID_P MATCHES "8")
-    
+
     set_target_properties (hotrod PROPERTIES OUTPUT_NAME "hotrod${OUTPUT_NAME_SUFFIX}")
     set_target_properties (hotrod PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
     set_target_properties (hotrod PROPERTIES LINK_FLAGS "${CATCH_UNDEFINED}")
     set_target_properties (hotrod PROPERTIES SOVERSION "1.0")
-    
+
     # Build a static library
     add_library (hotrod-static STATIC ${library_sources})
     set_target_properties(hotrod-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
@@ -473,7 +474,7 @@ endif (ENABLE_VALGRIND)
 
 file(COPY ${CMAKE_SOURCE_DIR}/test/query_proto DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
-hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS 
+hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS
   test/query_proto/addressbook.proto
   test/query_proto/bank.proto
 )
@@ -512,9 +513,9 @@ set_property(TARGET queryTest PROPERTY CXX_STANDARD 11)
 set_property(TARGET queryTest PROPERTY CXX_STANDARD_REQUIRED ON)
 if (MSVC)
     set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} /wd4244 /wd4267")
-else (MSVC) 
+else (MSVC)
     set_target_properties (queryTest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${NO_UNUSED_FLAGS}")
-endif (MSVC) 
+endif (MSVC)
 set_target_properties(queryTest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
 target_link_libraries (queryTest hotrod hotrod_protobuf  ${PROTOBUF_LIBRARY} ${platform_libs})
 
@@ -530,9 +531,9 @@ set_property(TARGET queryTest-static PROPERTY CXX_STANDARD_REQUIRED ON)
 set_target_properties(queryTest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
 if (MSVC)
 set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS} ${STATIC_FLAGS} /wd4244 /wd4267")
-else (MSVC) 
+else (MSVC)
 set_target_properties (queryTest-static PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS_NO_PEDANTIC} ${STATIC_FLAGS} ${NO_UNUSED_FLAGS}")
-endif (MSVC) 
+endif (MSVC)
 target_link_libraries (queryTest-static hotrod-static hotrod_protobuf ${PROTOBUF_LIBRARY} ${OPENSSL_LIBRARIES} ${platform_libs})
 
 add_executable (events test/Events.cpp)
@@ -587,7 +588,7 @@ target_include_directories(unittest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/que
                                      "${INCLUDE_FILES_DIR}/infinispan/hotrod"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
-    set_target_properties(unittest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}") 
+    set_target_properties(unittest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}")
     set_target_properties (unittest PROPERTIES COMPILE_FLAGS "${COMPILER_FLAGS} ${WARNING_FLAGS}")
     target_link_libraries (unittest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY})
 
@@ -618,7 +619,7 @@ include (CTest)
 if(ENABLE_INTERNAL_TESTING)
     add_test (unittest unittest)
     add_test (unittest-static unittest-static)
-endif(ENABLE_INTERNAL_TESTING)    
+endif(ENABLE_INTERNAL_TESTING)
 
 find_package(Java)
 
@@ -688,7 +689,7 @@ else (WIN32)
     if(EXISTS "/etc/redhat-release")
         set (PLATFORM "RHEL")
     elseif(EXISTS "/etc/debian_version")
-        set (PLATFORM "DEB") 
+        set (PLATFORM "DEB")
     endif(EXISTS "/etc/redhat-release")
 endif(WIN32)
 message (STATUS "Build ${CMAKE_BUILD_TYPE} for ${PLATFORM} on ${PACKAGE_ARCH}")
