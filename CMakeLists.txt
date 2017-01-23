@@ -87,8 +87,8 @@ function(HR_PROTOBUF_GENERATE_CPP SRCS HDRS)
     list(APPEND ${SRCS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc")
     list(APPEND ${HDRS} "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h")
     add_custom_command(
-	    OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc"
-	    "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h"
+      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.cc"
+      "${CMAKE_CURRENT_BINARY_DIR}/${FIL_WE}.pb.h"
       COMMAND  ${PROTOBUF_PROTOC_EXECUTABLE}
       ARGS --cpp_out dllexport_decl=HR_PROTO_EXPORT:${CMAKE_CURRENT_BINARY_DIR} ${_protobuf_include_path} ${ABS_FIL}
       DEPENDS ${ABS_FIL}
@@ -258,7 +258,7 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
         if(WIN32)
             # Copy pre-built libraries to the build directory
             add_custom_target(copyhrlibs ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${HOTROD_PREBUILT_LIB_DIR} ${CMAKE_CFG_INTDIR})
-	endif(WIN32)
+    endif(WIN32)
     endif("${HOTROD_LIBRARY}" STREQUAL "HOTROD_LIBRARY-NOTFOUND")
     find_library(HOTROD_STATIC_LIBRARY NAMES hotrod-static PATHS ${HOTROD_PREBUILT_LIB_DIR})
     if("${HOTROD_STATIC_LIBRARY}" STREQUAL "HOTROD_STATIC_LIBRARY-NOTFOUND")
@@ -274,40 +274,27 @@ if(DEFINED HOTROD_PREBUILT_LIB_DIR)
             message(FATAL_ERROR "Cannot find HotRod Protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
         else("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
             message("-- Found HotRod Protobuf static library: ${HOTROD_PROTOBUF_LIBRARY}")
-	  add_library(hotrod_protobuf STATIC IMPORTED GLOBAL)
+        add_library(hotrod_protobuf STATIC IMPORTED GLOBAL)
             set_target_properties(hotrod_protobuf PROPERTIES IMPORTED_LOCATION ${HOTROD_PROTOBUF_LIBRARY})
         endif("${HOTROD_PROTOBUF_LIBRARY}" STREQUAL "HOTROD_PROTOBUF_LIBRARY-NOTFOUND")
   
-        find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.a protobuf.lib protobuf  PATHS ${HOTROD_PREBUILT_LIB_DIR}
+        find_library(HR_PROTOBUF_LIBRARY NAMES libprotobuf.a libprotobuf.lib protobuf  PATHS ${HOTROD_PREBUILT_LIB_DIR}
                 NO_SYSTEM_ENVIRONMENT_PATH NO_DEFAULT_PATH
                 NO_CMAKE_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_DEFAULT_PATH)
         if("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
             message(FATAL_ERROR "Cannot find protobuf static library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
         else("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
             message("-- Found Protobuf static library: ${HR_PROTOBUF_LIBRARY}")
-	    add_library(protobuf STATIC IMPORTED GLOBAL)
+            add_library(protobuf STATIC IMPORTED GLOBAL)
             set_target_properties(protobuf PROPERTIES IMPORTED_LOCATION ${HR_PROTOBUF_LIBRARY})
-	    set_target_properties(protobuf PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_LIBRARY})
+        set_target_properties(protobuf PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_LIBRARY})
             set(PROTOBUF_LIBRARY ${HR_PROTOBUF_LIBRARY})
         endif("${HR_PROTOBUF_LIBRARY}" STREQUAL "HR_PROTOBUF_LIBRARY-NOTFOUND")
-  
-        #find_library(HR_PROTOBUF_PROTOC_LIBRARY NAMES protoc libprotoc PATHS ${HOTROD_PREBUILT_LIB_DIR}
-        #        NO_SYSTEM_ENVIRONMENT_PATH NO_DEFAULT_PATH
-        #        NO_CMAKE_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_DEFAULT_PATH)
-        #if("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
-        #    message(FATAL_ERROR "Cannot find protoc library in directory '${HOTROD_PREBUILT_LIB_DIR}'.")
-        #else("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
-        #    message("-- Found Protoc static library: ${HR_PROTOBUF_PROTOC_LIBRARY}")
-	#    add_library(protoc STATIC IMPORTED GLOBAL)
-        #    set_target_properties(protoc PROPERTIES IMPORTED_LOCATION ${HR_PROTOBUF_PROTOC_LIBRARY})
-	#    set_target_properties(protoc PROPERTIES IMPORTED_IMPLIB ${HR_PROTOBUF_PROTOC_LIBRARY})
-        #    set(PROTOBUF_PROTOC_LIBRARY ${HR_PROTOBUF_PROTOC_LIBRARY})
-        #endif("${HR_PROTOBUF_PROTOC_LIBRARY}" STREQUAL "HR_PROTOBUF_PROTOC_LIBRARY-NOTFOUND")
 
-	if(NOT DEFINED WIN32)
+        if(NOT DEFINED WIN32)
             find_package(OpenSSL)
             include_directories(${OPENSSL_INCLUDE_DIR})
-    endif(NOT DEFINED WIN32)
+        endif(NOT DEFINED WIN32)
          
         if(UNIX) 
             set (PROTOBUF_PROTOC_EXECUTABLE ${HOTROD_PREBUILT_LIB_DIR}/../bin/protoc)
@@ -433,7 +420,7 @@ if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set_target_properties(hotrod_protobuf PROPERTIES COMPILE_FLAGS "-fPIC ${WARNING_FLAGS}" )
 endif (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 target_include_directories(hotrod_protobuf PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	"${INCLUDE_FILES_DIR}"
+                                     "${INCLUDE_FILES_DIR}"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 
@@ -495,7 +482,7 @@ hr_protobuf_generate_cpp(TEST_PROTO_SRCS TEST_PROTO_HDRS
 
 add_executable (simple test/Simple.cpp)
 target_include_directories(simple PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	"${INCLUDE_FILES_DIR}"
+                                     "${INCLUDE_FILES_DIR}"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET simple PROPERTY CXX_STANDARD 11)
@@ -506,7 +493,7 @@ target_link_libraries (simple hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platf
 
 add_executable (simple-static test/Simple.cpp)
 target_include_directories(simple-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	"${INCLUDE_FILES_DIR}"
+                                     "${INCLUDE_FILES_DIR}"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET simple-static PROPERTY CXX_STANDARD 11)
@@ -517,8 +504,8 @@ target_link_libraries (simple-static hotrod-static hotrod_protobuf ${PROTOBUF_LI
 
 add_executable (queryTest test/QueryTest.cpp ${TEST_PROTO_SRCS})
 target_include_directories(queryTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	"${INCLUDE_FILES_DIR}"
-	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                     "${INCLUDE_FILES_DIR}"
+                                     "${INCLUDE_FILES_DIR}/infinispan/hotrod"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET queryTest PROPERTY CXX_STANDARD 11)
@@ -533,8 +520,8 @@ target_link_libraries (queryTest hotrod hotrod_protobuf  ${PROTOBUF_LIBRARY} ${p
 
 add_executable (queryTest-static ${TEST_PROTO_SRCS} test/QueryTest.cpp)
 target_include_directories(queryTest-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	"${INCLUDE_FILES_DIR}"
-	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                     "${INCLUDE_FILES_DIR}"
+                                     "${INCLUDE_FILES_DIR}/infinispan/hotrod"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 
@@ -550,7 +537,7 @@ target_link_libraries (queryTest-static hotrod-static hotrod_protobuf ${PROTOBUF
 
 add_executable (events test/Events.cpp)
 target_include_directories(events PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	"${INCLUDE_FILES_DIR}"
+                                     "${INCLUDE_FILES_DIR}"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET events PROPERTY CXX_STANDARD 11)
@@ -561,7 +548,7 @@ target_link_libraries (events hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platf
 
 add_executable (nearCacheTest test/NearCacheTest.cpp)
 target_include_directories(nearCacheTest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	"${INCLUDE_FILES_DIR}"
+                                     "${INCLUDE_FILES_DIR}"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 set_property(TARGET nearCacheTest PROPERTY CXX_STANDARD 11)
@@ -572,8 +559,8 @@ target_link_libraries (nearCacheTest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} 
 
     add_executable (simple-tls test/SimpleTLS.cpp)
     target_include_directories(simple-tls PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	    "${INCLUDE_FILES_DIR}"
-	    "${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                         "${INCLUDE_FILES_DIR}"
+                                         "${INCLUDE_FILES_DIR}/infinispan/hotrod"
                                          "${CMAKE_CURRENT_BINARY_DIR}"
                                          "${PROTOBUF_INCLUDE_DIR}")
     set_property(TARGET simple-tls PROPERTY CXX_STANDARD 11)
@@ -583,8 +570,8 @@ target_link_libraries (nearCacheTest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} 
     target_link_libraries (simple-tls hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} ${platform_libs} ${OPENSSL_LIBRARIES})
     add_executable (simple-tls-sni test/SimpleTLS-SNI.cpp)
     target_include_directories(simple-tls-sni PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	    "${INCLUDE_FILES_DIR}"
-	    "${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                         "${INCLUDE_FILES_DIR}"
+                                         "${INCLUDE_FILES_DIR}/infinispan/hotrod"
                                          "${CMAKE_CURRENT_BINARY_DIR}"
                                          "${PROTOBUF_INCLUDE_DIR}")
     set_property(TARGET simple-tls-sni PROPERTY CXX_STANDARD 11)
@@ -596,8 +583,8 @@ target_link_libraries (nearCacheTest hotrod hotrod_protobuf ${PROTOBUF_LIBRARY} 
 if(ENABLE_INTERNAL_TESTING)
     add_executable (unittest test/Unit.cpp)
 target_include_directories(unittest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	"${INCLUDE_FILES_DIR}"
-	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                     "${INCLUDE_FILES_DIR}"
+                                     "${INCLUDE_FILES_DIR}/infinispan/hotrod"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
     set_target_properties(unittest PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}") 
@@ -606,8 +593,8 @@ target_include_directories(unittest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/que
 
     add_executable (unittest-static test/Unit.cpp)
 target_include_directories(unittest-static PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	"${INCLUDE_FILES_DIR}"
-	"${INCLUDE_FILES_DIR}/infinispan/hotrod"
+                                     "${INCLUDE_FILES_DIR}"
+                                     "${INCLUDE_FILES_DIR}/infinispan/hotrod"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
     set_target_properties(unittest-static PROPERTIES COMPILE_DEFINITIONS "${DLLEXPORT_STATIC}" )
@@ -617,7 +604,7 @@ endif (ENABLE_INTERNAL_TESTING)
 
 add_executable (itest test/InteractiveTest.cpp)
 target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto"
-	"${INCLUDE_FILES_DIR}"
+                                     "${INCLUDE_FILES_DIR}"
                                      "${CMAKE_CURRENT_BINARY_DIR}"
                                      "${PROTOBUF_INCLUDE_DIR}")
 target_include_directories(itest PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/test/query_proto")
