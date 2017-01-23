@@ -43,6 +43,7 @@ namespace infinispan {
 				SECURITY_STATUS clientHandshakeLoop(BOOL doInitialRead, SecBuffer  *pExtraData);
 				void            getNewClientCredentials();
 				SECURITY_STATUS performClientHandshake(std::string host, SecBuffer  *pExtraData);
+                LONG DisconnectFromServer();
 				void            cleanup();
 				void            displayConnectionInfo();
 
