@@ -99,8 +99,6 @@ public class JniTest implements IMethodSelector {
             "ForceReturnValuesTest.testDifferentInstancesForDifferentForceReturnValues",
             "ForceReturnValuesTest.testSameInstanceForSameForceReturnValues",
             "HotRodIntegrationTest.testGetWithMetadata",
-            "ServerShutdownTest.testServerShutdownWithConnectedClient",
-            "ServerShutdownTest.testServerShutdownWithoutConnectedClient",
             "RemoteCacheManagerTest.testGetUndefinedCache"
       ));
       Set<String> expectedSkips = Collections.emptySet();
