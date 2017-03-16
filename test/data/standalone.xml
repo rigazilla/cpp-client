@@ -160,7 +160,7 @@
             <worker name="default"/>
             <buffer-pool name="default"/>
         </subsystem>
-        <subsystem xmlns="urn:infinispan:server:core:8.3" default-cache-container="local">
+        <subsystem xmlns="urn:infinispan:server:core:8.4" default-cache-container="local">
             <cache-container name="local" default-cache="default" statistics="true">
                 <global-state/>
                 <local-cache name="default" start="EAGER">
@@ -175,12 +175,14 @@
                 <local-cache name="namedCache" start="EAGER"/>
             </cache-container>
         </subsystem>
-        <subsystem xmlns="urn:infinispan:server:endpoint:8.0">
+        <subsystem xmlns="urn:infinispan:server:endpoint:8.1">
             <hotrod-connector socket-binding="hotrod" cache-container="local">
                 <topology-state-transfer lazy-retrieval="false" lock-timeout="1000" replication-timeout="5000"/>
             </hotrod-connector>
             <memcached-connector socket-binding="memcached" cache-container="local"/>
-            <rest-connector socket-binding="rest" cache-container="local" security-domain="other" auth-method="BASIC"/>
+            <rest-connector socket-binding="rest" cache-container="local">
+                <authentication security-realm="ApplicationRealm" auth-method="BASIC"/>
+            </rest-connector>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:jca:4.0">
             <archive-validation enabled="true" fail-on-error="true" fail-on-warn="false"/>
