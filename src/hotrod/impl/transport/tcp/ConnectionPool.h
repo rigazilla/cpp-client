@@ -43,7 +43,7 @@ class ConnectionPool
 {
   public:
     ConnectionPool(
-      std::shared_ptr<TransportObjectFactory> factory_,
+      std::shared_ptr<AbstractObjectFactory> factory_,
       const ConnectionPoolConfiguration& configuration_)
       : factory(factory_), configuration(configuration_), closed(false),
 		totalIdle(0), totalActive(0)
@@ -111,7 +111,7 @@ class ConnectionPool
     bool hasReachedMaxTotal();
     bool tryRemoveIdle();
 
-    std::shared_ptr<TransportObjectFactory> factory;
+    std::shared_ptr<AbstractObjectFactory> factory;
     const ConnectionPoolConfiguration& configuration;
     sys::Mutex lock;
     std::map<InetSocketAddress, TransportQueuePtr > busy;
