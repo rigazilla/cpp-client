@@ -134,12 +134,12 @@ void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConf
     unsigned int passLen;
     const char *realm;
     unsigned int realmLen;
-    auto sasl_cb = get_auth_callback(HOTROD_SASL_CB_USER, conf);
-    sasl_cb->proc(sasl_cb->context, sasl_cb->id, &username, &userLen);
-    sasl_cb = get_auth_callback(HOTROD_SASL_CB_PASS, conf);
-    sasl_cb->proc(sasl_cb->context, sasl_cb->id, &password, &passLen);
-    sasl_cb = get_auth_callback(HOTROD_SASL_CB_GETREALM, conf);
-    sasl_cb->proc(sasl_cb->context, sasl_cb->id, &realm, &realmLen);
+    auto sasl_cb = get_auth_callback(SASL_CB_USER, conf);
+    ((int(*)(void *, int, const char**, unsigned*))sasl_cb->proc)(sasl_cb->context, sasl_cb->id, &username, &userLen);
+    sasl_cb = get_auth_callback(SASL_CB_PASS, conf);
+    ((int(*)(void *, int, const char**, unsigned*))sasl_cb->proc)(sasl_cb->context, sasl_cb->id, &password, &passLen);
+    sasl_cb = get_auth_callback(SASL_CB_GETREALM, conf);
+    ((int(*)(void *, int, const char**, unsigned*))sasl_cb->proc)(sasl_cb->context, sasl_cb->id, &realm, &realmLen);
     credentials.User = (unsigned char*)username;
     credentials.UserLength = userLen;
     credentials.Password = (unsigned char*)password;

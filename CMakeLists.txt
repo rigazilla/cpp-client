@@ -664,7 +664,12 @@ if (ENABLE_INTERNAL_TESTING)
 endif (ENABLE_INTERNAL_TESTING)    
 
 find_package(Java)
+
 find_program(MVN_PROGRAM "mvn")
+if (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
+    message(FATAL_ERROR "Apache Maven (mvn) not found in path")
+endif (MVN_PROGRAM STREQUAL "MVN_PROGRAM-NOTFOUND")
+
 
 if (NOT DEFINED HOTROD_JBOSS_HOME)
    if (NOT DEFINED ENV{JBOSS_HOME})
@@ -701,7 +706,14 @@ else (NOT ((EXISTS "${HOTROD_JBOSS_HOME}/bin/standalone.sh") AND (EXISTS "${HOTR
     add_test (nearCacheTest nearCacheTest)
     add_test (stop_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
     if (NOT WIN32)
-        add_test (start_krbserver  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/start_and_probe_port.py localhost 51099 10 "/usr/bin/mvn -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server")
+	    add_test (start_krbserver  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/start_and_probe_port.py localhost 10389 60 "${MVN_PROGRAM} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server")
+        add_test (start_sals_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone-sasl.xml)
+        add_test (probe_sasl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
+        add_test (simpleSasl simpleSasl)
+        add_test (stop_sasl_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py stop)
+        add_test (stop_krbserver ${MVN_PROGRAM} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server -Dexec.args=stop)
+    else (WIN32)
+	    add_test (start_krbserver  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/start_and_probe_port.py localhost 10389 60 "${MVN_PROGRAM} -f krbserver/pom.xml exec:java -Dexec.mainClass=krbserver.Server")
         add_test (start_sals_server ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/server_ctl.py start ${JAVA_RUNTIME} ${HOTROD_JBOSS_HOME} standalone-sasl.xml)
         add_test (probe_sasl_port ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/bin/probe_port.py localhost 11222 60)
         add_test (simpleSasl simpleSasl)
