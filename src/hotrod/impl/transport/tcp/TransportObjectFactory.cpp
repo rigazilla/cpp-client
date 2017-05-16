@@ -59,7 +59,7 @@ void logAndThrow(const std::string& host, const int port, const std::string& msg
 
 const sasl_callback_t* get_auth_callback(unsigned long id, const AuthenticationConfiguration& conf)
 {
-    for each (auto &var in conf.getCallbackHandler())
+    for (auto &var: conf.getCallbackHandler())
     {
         if (var.id == id)
             return &var;
