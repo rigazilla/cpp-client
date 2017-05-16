@@ -130,20 +130,19 @@ void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConf
     credentials.Flags = SEC_WINNT_AUTH_IDENTITY_ANSI;
     const char *username;
     unsigned int userLen;
-    const char *password;
-    unsigned int passLen;
+    sasl_secret_t *secret;
     const char *realm;
     unsigned int realmLen;
     auto sasl_cb = get_auth_callback(SASL_CB_USER, conf);
     ((int(*)(void *, int, const char**, unsigned*))sasl_cb->proc)(sasl_cb->context, sasl_cb->id, &username, &userLen);
     sasl_cb = get_auth_callback(SASL_CB_PASS, conf);
-    ((int(*)(void *, int, const char**, unsigned*))sasl_cb->proc)(sasl_cb->context, sasl_cb->id, &password, &passLen);
+    ((int(*)(void *, void*, int, sasl_secret_t**))sasl_cb->proc)(nullptr, sasl_cb->context, sasl_cb->id, &secret);
     sasl_cb = get_auth_callback(SASL_CB_GETREALM, conf);
     ((int(*)(void *, int, const char**, unsigned*))sasl_cb->proc)(sasl_cb->context, sasl_cb->id, &realm, &realmLen);
     credentials.User = (unsigned char*)username;
     credentials.UserLength = userLen;
-    credentials.Password = (unsigned char*)password;
-    credentials.PasswordLength = passLen;
+    credentials.Password = (unsigned char*)secret->data;
+    credentials.PasswordLength = secret->len;
     credentials.Domain = (unsigned char*)realm;
     credentials.DomainLength = realmLen;
     ss = AcquireCredentialsHandle(NULL, "WDigest", SECPKG_CRED_OUTBOUND, NULL, &credentials, NULL, NULL, &hCred, &tsExpiry);
@@ -180,7 +179,7 @@ void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConf
     {
         resp.insert(resp.end(), username, username + userLen + 1);
         resp.insert(resp.end(), username, username + userLen + 1);
-        resp.insert(resp.end(), password, password + passLen);
+        resp.insert(resp.end(), (char*)secret->data, ((char*)secret->data) + secret->len);
     }
     AuthOperation a(codec, t, mech, resp);
     std::vector<char> respOp(a.execute());
