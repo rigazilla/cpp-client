@@ -4,7 +4,9 @@
 #include "infinispan/hotrod/Version.h"
 
 #include "infinispan/hotrod/JBasicMarshaller.h"
+#if !defined _WIN32 && !defined _WIN64
 #include <sasl/saslplug.h>
+#endif
 
 #include <stdlib.h>
 #include <iostream>
@@ -79,17 +81,22 @@ void assert_not_null(const std::string& message, int line, const std::unique_ptr
     }
 }
 
-static char *simple_data; // plain
-static char realm_data[] = "applicationRealm";
+static char simple_data[]="usber"; // plain
 
-static int simple(void *context __attribute__((unused)), int id, const char **result, unsigned *len) {
+#if !defined _WIN32 && !defined _WIN64
+static char realm_data[] = "applicationRealm";
+#else
+static char realm_data[] = "ApplicationRealm";
+#endif
+
+static int simple(void* /* context */, int id, const char **result, unsigned *len) {
     *result = simple_data;
     if (len)
         *len = strlen(simple_data);
     return SASL_OK;
 }
 
-static int getrealm(void *context __attribute__((unused)), int id, const char **result, unsigned *len) {
+static int getrealm(void* /* context */, int id, const char **result, unsigned *len) {
     *result = realm_data;
     if (len)
         *len = strlen(simple_data);
@@ -107,14 +114,16 @@ static int getpath(void *context, const char ** path) {
     return SASL_OK;
 }
 
-static char *secret_data;
-static int getsecret(sasl_conn_t *conn, void *context __attribute__((unused)), int id, sasl_secret_t **psecret) {
+static char secret_data[]="pessword";
+static int getsecret(void*  conn, void* /* context */, int id, sasl_secret_t **psecret) {
     size_t len;
     static sasl_secret_t *x;
-
+#if !defined _WIN32 && !defined _WIN64
     /* paranoia check */
     if (!conn || !psecret || id != SASL_CB_PASS)
         return SASL_BADPARAM;
+#endif
+
 
     len = strlen(secret_data);
 
@@ -139,6 +148,7 @@ int main(int argc, char** argv) {
         std::cerr << "Usage: " << argv[0] << " ca_path [client_ca_file]" << std::endl;
         return 1;
     }
+    try
     {
       ConfigurationBuilder builder;
       builder.addServer().host("127.0.0.1").port(11222);
@@ -155,6 +165,7 @@ int main(int argc, char** argv) {
       RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
           &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy, std::string("authCache"));
       cacheManager.start();
+        cache.clear();
       std::string k1("key13");
       std::string v1("boron");
 
@@ -164,18 +175,12 @@ int main(int argc, char** argv) {
           std::cerr << "get/put fail for " << k1 << " got " << *rv << " expected " << v1 << std::endl;
           return 1;
       }
-      try
-      {
-          cache.clear();
-          std::cerr << "error: role writer can execute clean operation!" << std::endl;
-          return 1;
+        cacheManager.stop();
+        return 0;
       }
-      catch (Exception )
+    catch (Exception &ex)
       {
-
+        std::cout << "Error: " << ex.what() << std::endl;
       }
-      cacheManager.stop();
-    }
-    return 0;
 }
 

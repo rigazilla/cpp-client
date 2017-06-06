@@ -185,6 +185,7 @@ void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConf
     if (!strcmp("PLAIN", choosenmech))
     {
         resp.insert(resp.end(), username, username + userLen + 1);
+        resp.insert(resp.end(), username, username + userLen + 1);
         resp.insert(resp.end(), (char*)secret->data, ((char*)secret->data) + secret->len);
         AuthOperation a(codec, t, mech, resp);
         std::vector<char> respOp(a.execute());
@@ -198,7 +199,6 @@ void do_sasl_authentication(Codec& codec, Transport& t, const AuthenticationConf
     }
     AuthOperation a(codec, t, mech, resp);
     std::vector<char> respOp(a.execute());
-    return;
     memcpy(IoBuffer, respOp.data(), respOp.size());
     InBuffers[0].pvBuffer = IoBuffer;
     InBuffers[0].cbBuffer = respOp.size();
