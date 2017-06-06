@@ -153,9 +153,8 @@ int main(int argc, char** argv) {
       BasicMarshaller<std::string> *km = new BasicMarshaller<std::string>();
       BasicMarshaller<std::string> *vm = new BasicMarshaller<std::string>();
       RemoteCache<std::string, std::string> cache = cacheManager.getCache<std::string, std::string>(km,
-          &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy);
+          &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy, std::string("authCache"));
       cacheManager.start();
-      cache.clear();
       std::string k1("key13");
       std::string v1("boron");
 
@@ -164,6 +163,16 @@ int main(int argc, char** argv) {
       if (rv->compare(v1)) {
           std::cerr << "get/put fail for " << k1 << " got " << *rv << " expected " << v1 << std::endl;
           return 1;
+      }
+      try
+      {
+          cache.clear();
+          std::cerr << "error: role writer can execute clean operation!" << std::endl;
+          return 1;
+      }
+      catch (Exception )
+      {
+
       }
       cacheManager.stop();
     }

@@ -18,30 +18,6 @@
     </extensions>
     <management>
         <security-realms>
-            <security-realm name="SSLRealm1">
-                <authentication>
-                    <local default-user="$local" allowed-users="*" skip-group-loading="true"/>
-                    <truststore path="truststore.jks" relative-to="jboss.server.config.dir" keystore-password="secret"/>
-                    <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
-                </authentication>
-                <server-identities>
-                    <ssl>
-                        <keystore path="keystore_client.jks" relative-to="jboss.server.config.dir" keystore-password="secret"/>
-                    </ssl>
-                </server-identities>
-            </security-realm>
-                <security-realm name="SSLRealm2">
-                <authentication>
-                    <local default-user="$local" allowed-users="*" skip-group-loading="true"/>
-                    <truststore path="truststore.jks" relative-to="jboss.server.config.dir" keystore-password="secret"/>
-                    <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
-                </authentication>
-                <server-identities>
-                    <ssl>
-                        <keystore path="keystore_server.jks" relative-to="jboss.server.config.dir" keystore-password="secret"/>
-                    </ssl>
-                </server-identities>
-            </security-realm>
             <security-realm name="ManagementRealm">
                 <authentication>
                     <local default-user="$local" skip-group-loading="true"/>
@@ -55,7 +31,6 @@
                 <authentication>
                     <local default-user="$local" allowed-users="*" skip-group-loading="true"/>
                     <truststore path="truststore.jks" relative-to="jboss.server.config.dir" keystore-password="secret"/>
-                    <properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>
                 <authorization>
                     <properties path="application-roles.properties" relative-to="jboss.server.config.dir"/>
@@ -157,6 +132,16 @@
         <subsystem xmlns="urn:infinispan:server:core:9.0" default-cache-container="local">
             <cache-container name="local" default-cache="default" statistics="true">
                 <global-state/>
+                <security>
+                    <authorization>
+                        <identity-role-mapper/>
+                        <role name="admin" permissions="ALL"/>
+                        <role name="reader" permissions="READ"/>
+                        <role name="writer" permissions="READ WRITE"/>
+                        <role name="supervisor" permissions="READ WRITE EXEC BULK_READ BULK_WRITE"/>
+                        <role name="executor" permissions="READ WRITE BULK_READ EXEC ADMIN"/>
+                    </authorization>
+                </security>
                 <local-cache name="default" start="EAGER">
                     <locking acquire-timeout="30000" concurrency-level="1000" striping="false"/>
                     <transaction mode="NONE"/>
@@ -166,6 +151,11 @@
                     <transaction mode="NONE"/>
                 </local-cache>
                 <local-cache name="namedCache" start="EAGER"/>
+                <local-cache name="authCache" start="EAGER">
+                    <security>
+                        <authorization roles="admin reader writer supervisor" enabled="true"/>
+                    </security>
+                </local-cache>
             </cache-container>
         </subsystem>
         <subsystem xmlns="urn:infinispan:server:endpoint:9.0">
@@ -180,9 +170,6 @@
                     </sasl>
                 </authentication>
                 <encryption security-realm="ApplicationRealm" require-ssl-client-auth="true">
-                     <sni host-name="sni"    security-realm="SSLRealm2"/>
-                     <sni host-name="sni2"   security-realm="SSLRealm1"/>
-                     <sni host-name="sni3"    security-realm="SSLRealm2"/>
                 </encryption>
             </hotrod-connector>
         </subsystem>
