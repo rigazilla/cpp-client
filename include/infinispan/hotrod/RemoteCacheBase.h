@@ -25,6 +25,7 @@ class OperationsFactory;
 
 namespace event {
 template <class K, class V> class CacheClientListener;
+template <class K, class V> class ContinuousQueryListener;
 }
 typedef void (*MarshallHelperFn) (void*, const void*, std::vector<char> &);
 typedef void* (*UnmarshallHelperFn) (void*, const std::vector<char> &);
@@ -86,6 +87,8 @@ friend class KeyUnmarshallerFtor;
 friend class ValueUnmarshallerFtor;
 template <class K, class V>
 friend class ::infinispan::hotrod::event::CacheClientListener;
+template <class K, class V>
+friend class ::infinispan::hotrod::event::ContinuousQueryListener;
 };
 
 }} // namespace
