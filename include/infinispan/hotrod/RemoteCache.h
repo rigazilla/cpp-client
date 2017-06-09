@@ -11,6 +11,8 @@
 #include "infinispan/hotrod/exceptions.h"
 #include "infinispan/hotrod/ClientListener.h"
 #include "infinispan/hotrod/Query.h"
+#include "infinispan/hotrod/ContinuousQueryListener.h"
+#include <infinispan/hotrod/BasicTypesProtoStreamMarshaller.h>
 #include <cmath>
 #include <set>
 #include <map>
@@ -867,6 +869,11 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     	base_removeClientListener(clientListener);
     }
 
+    void addContinuousQueryListener(ContinuousQueryListener<K,V>& cql)
+    {
+		base_addContinuousQueryListener(cql);
+    }
+
     CacheTopologyInfo getCacheTopologyInfo(){
     	return base_getCacheTopologyInfo();
     }
@@ -893,6 +900,23 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
         valueMarshaller = other.valueMarshaller;
         setMarshallers(this, &keyMarshall, &valueMarshall, &keyUnmarshall, &valueUnmarshall);
         return *this;
+    }
+
+    K* keyUnmarshall(const std::vector<char> &buf) const
+    {
+        return keyMarshaller->unmarshall(buf);
+    }
+
+    V* valueUnmarshall(const std::vector<char> &buf) const
+    {
+        return valueMarshaller->unmarshall(buf);
+    }
+
+    void keyMarshall(K key, std::vector<char> &buf) {
+        keyMarshaller->marshall(key, buf);
+    }
+    void valueMarshall(V val, std::vector<char> &buf) {
+        valueMarshaller->marshall(val, buf);
     }
 
   protected:
@@ -946,6 +970,53 @@ template <class K, class V> class RemoteCache : private RemoteCacheBase
     static void* valueUnmarshall(void* thisp, const std::vector<char> &buf) {
         return ((RemoteCache<K, V> *)thisp)->valueMarshaller->unmarshall(buf);
     }
+
+	void base_addContinuousQueryListener(ContinuousQueryListener<K, V>& cql) {
+		static char CONTINUOUS_QUERY_FILTER_FACTORY_NAME[] =
+				"continuous-query-filter-converter-factory";
+		cql.cl.filterFactoryName = std::vector<char>(
+				CONTINUOUS_QUERY_FILTER_FACTORY_NAME,
+				CONTINUOUS_QUERY_FILTER_FACTORY_NAME
+						+ strlen(CONTINUOUS_QUERY_FILTER_FACTORY_NAME));
+		cql.cl.converterFactoryName = std::vector<char>(
+				CONTINUOUS_QUERY_FILTER_FACTORY_NAME,
+				CONTINUOUS_QUERY_FILTER_FACTORY_NAME
+						+ strlen(CONTINUOUS_QUERY_FILTER_FACTORY_NAME));
+		BasicTypesProtoStreamMarshaller<std::string> paramMarshaller;
+		std::vector<std::vector<char> > filterFactoryParams;
+		std::vector<char> param;
+		paramMarshaller.marshall(cql.getQuery(), param);
+		filterFactoryParams.push_back(param);
+		std::vector<std::vector<char> > converterFactoryParams;
+		cql.cl.useRawData = true;
+		cql.listenerCustomEvent =
+				[this, &cql](ClientCacheEntryCustomEvent e) {
+					ContinuousQueryResult r;
+					WrappedMessage wm;
+					wm.ParseFromArray(e.getEventData().data(), e.getEventData().size());
+					r.ParseFromString(wm.wrappedmessagebytes());
+					auto resultType = r.resulttype();
+					K* k = this->keyUnmarshall(std::vector<char>(r.key().begin(), r.key().end()));
+					V* v = this->valueUnmarshall(std::vector<char>(r.value().begin(), r.value().end()));
+					switch (resultType) {
+						case ContinuousQueryResult_ResultType_JOINING:
+						cql.getJoiningListener()(*k, *v);
+						break;
+						case ContinuousQueryResult_ResultType_LEAVING:
+						cql.getLeavingListener()(*k, *v);
+						break;
+						case ContinuousQueryResult_ResultType_UPDATED:
+						cql.getUpdatedListener()(*k, *v);
+						break;
+						default:
+						//uIgnore unknown types
+						break;
+					}
+				};
+		cql.cl.add_listener(cql.listenerCustomEvent);
+		this->addClientListener(cql.cl, filterFactoryParams,
+				converterFactoryParams, cql.getFailoverListener());
+	}
 
     std::shared_ptr<Marshaller<K> > keyMarshaller;
     std::shared_ptr<Marshaller<V> > valueMarshaller;
