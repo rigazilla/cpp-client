@@ -7,7 +7,7 @@
 
 #ifndef INCLUDE_INFINISPAN_HOTROD_CONTINUOUSQUERYLISTENER_H_
 #define INCLUDE_INFINISPAN_HOTROD_CONTINUOUSQUERYLISTENER_H_
-
+#ifndef SWIGCSHARP
 #include "infinispan/hotrod/ClientEvent.h"
 #include "infinispan/hotrod/ImportExport.h"
 #include "infinispan/hotrod/ClientListener.h"
@@ -139,5 +139,5 @@ private:
 };
 }}}
 
-
+#endif
 #endif /* INCLUDE_INFINISPAN_HOTROD_CONTINUOUSQUERYLISTENER_H_ */
