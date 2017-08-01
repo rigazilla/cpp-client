@@ -35,8 +35,23 @@ std::string read(std::string file)
 	return buffer.str();
 }
 
-int main(int argc, char** argv) {
+class ResourceManager{
+private:
+	std::vector<std::function<void()> > cleanups;
+public:
+	~ResourceManager() {
+		for(auto cleanup : cleanups) {
+			cleanup();
+		}
+	}
+	void add(std::function<void()> cleanup)
+	{
+		cleanups.push_back(cleanup);
+	}
+};
 
+int main(int argc, char** argv) {
+    ResourceManager rMain;
 	int result = 0;
 	std::cout << "Tests for Continuous Query" << std::endl;
 	ConfigurationBuilder builder;
@@ -45,6 +60,7 @@ int main(int argc, char** argv) {
 	builder.balancingStrategyProducer(nullptr);
 	RemoteCacheManager cacheManager(builder.build(), false);
 	cacheManager.start();
+	rMain.add([&cacheManager] {cacheManager.stop(); });
 	//initialize server-side serialization
 	auto *km = new BasicTypesProtoStreamMarshaller<std::string>();
 	auto *vm = new BasicTypesProtoStreamMarshaller<std::string>();
@@ -65,14 +81,16 @@ int main(int argc, char** argv) {
 	auto *testvm = new ProtoStreamMarshaller<sample_bank_account::User>();
 	RemoteCache<int, sample_bank_account::User> testCache = cacheManager.getCache<int, sample_bank_account::User>(
 			testkm, &Marshaller<int>::destroy, testvm, &Marshaller<sample_bank_account::User>::destroy, false);
-	testCache.clear();
+	ContinuousQueryListener<int, sample_bank_account::User> cql(testCache,
+			"from sample_bank_account.User");
 	{
+		ResourceManager r;
 		std::cout << "Testing query: from sample_bank_account.User" << std::endl;
-		ContinuousQueryListener<int, sample_bank_account::User> cql(testCache,
-				"from sample_bank_account.User");
+
+		testCache.clear();
+
 		std::promise<void> promise;
 		int createdCount = 0, changedCount = 0, removedCount = 0;
-
 		std::function<void(int, sample_bank_account::User)> join =
 				[&promise, &createdCount](int k, sample_bank_account::User u)
 				{
@@ -99,7 +117,7 @@ int main(int argc, char** argv) {
 		cql.setLeavingListener(leave);
 		cql.setUpdatedListener(change);
 		testCache.addContinuousQueryListener(cql);
-
+        r.add([&testCache,&cql](){ testCache.removeContinuousQueryListener(cql);});
 		sample_bank_account::User_Address a;
 		sample_bank_account::User user1;
 		user1.set_id(1);
@@ -138,12 +156,15 @@ int main(int argc, char** argv) {
 					<< std::endl;
 			return -1;
 		}
-		testCache.removeContinuousQueryListener(cql);
 	}
+	
+	ContinuousQueryListener<int, sample_bank_account::User, int, std::string> cql1(
+			testCache, "select id, name from sample_bank_account.User");
 	{
+		ResourceManager r;
 		std::cout << "Testing query: select id, name from sample_bank_account.User" << std::endl;
-		ContinuousQueryListener<int, sample_bank_account::User, int, std::string> cql(
-				testCache, "select id, name from sample_bank_account.User");
+		testCache.clear();
+
 		std::promise<void> promise;
 		int createdCount = 0, changedCount = 0, removedCount = 0;
 
@@ -169,9 +190,9 @@ int main(int argc, char** argv) {
 					++changedCount;
 				};
 
-		cql.setJoiningListener(join);
-		cql.setLeavingListener(leave);
-		cql.setUpdatedListener(change);
+		cql1.setJoiningListener(join);
+		cql1.setLeavingListener(leave);
+		cql1.setUpdatedListener(change);
 
 		std::vector<char> param;
 
@@ -195,7 +216,8 @@ int main(int argc, char** argv) {
 				CONTINUOUS_QUERY_FILTER_FACTORY_NAME
 						+ strlen(CONTINUOUS_QUERY_FILTER_FACTORY_NAME));
 
-		testCache.addContinuousQueryListener(cql);
+		testCache.addContinuousQueryListener(cql1);
+        r.add([&testCache,&cql1](){ testCache.removeContinuousQueryListener(cql1);});
 
 		sample_bank_account::User_Address a;
 		sample_bank_account::User user1;
@@ -236,11 +258,124 @@ int main(int argc, char** argv) {
 					<< std::endl;
 			return -1;
 		}
+	}
 
-		std::cout << "PASS: continuous query" << std::endl;
-		testCache.removeContinuousQueryListener(cql);
+	ContinuousQueryListener<int, sample_bank_account::User> cql2(testCache,
+			"from sample_bank_account.User");
+	ContinuousQueryListener<int, sample_bank_account::User> cql_where(testCache,
+			"from sample_bank_account.User where name='Mickey'");
+	{
+		ResourceManager r;
+		std::cout << "Testing multiple queries: from sample_bank_account.User" << std::endl;
+		std::cout << "                          from sample_bank_account.User where name='Mickey'" << std::endl;
+
+		testCache.clear();
+
+		std::promise<void> promise;
+		int createdCount = 0, changedCount = 0, removedCount = 0;
+
+		std::function<void(int, sample_bank_account::User)> join =
+				[&promise, &createdCount](int k, sample_bank_account::User u)
+				{
+					std::cout << "JOINING: key="<< u.id() << " value="<< u.name() << std::endl;
+					++createdCount;
+				};
+
+		std::function<void(int, sample_bank_account::User)> leave =
+				[&promise, &removedCount](int k, sample_bank_account::User u)
+				{
+					std::cout << "LEAVING: key="<< u.id() << " value="<< u.name() << std::endl;
+					++removedCount;
+				};
+
+		std::function<void(int, sample_bank_account::User)> change =
+				[&promise, &changedCount](int k, sample_bank_account::User u)
+				{
+					std::cout << "CHANGING: key="<< u.id() << " value="<< u.name() << std::endl;
+					++changedCount;
+				};
+
+		cql2.setJoiningListener(join);
+		cql2.setLeavingListener(leave);
+		cql2.setUpdatedListener(change);
+
+		testCache.addContinuousQueryListener(cql2);
+        r.add([&testCache,&cql2](){ testCache.removeContinuousQueryListener(cql2);});
+
+		int createdCount_where = 0, changedCount_where = 0, removedCount_where = 0;
+
+		std::function<void(int, sample_bank_account::User)> join_where =
+				[&promise, &createdCount_where](int k, sample_bank_account::User u)
+				{
+					std::cout << "JOINING WHERE: key="<< u.id() << " value="<< u.name() << std::endl;
+					++createdCount_where;
+				};
+
+		std::function<void(int, sample_bank_account::User)> leave_where =
+				[&promise, &removedCount_where](int k, sample_bank_account::User u)
+				{
+					std::cout << "LEAVING WHERE: key="<< u.id() << " value="<< u.name() << std::endl;
+					++removedCount_where;
+					promise.set_value();
+				};
+
+		std::function<void(int, sample_bank_account::User)> change_where =
+				[&promise, &changedCount_where](int k, sample_bank_account::User u)
+				{
+					std::cout << "CHANGING WHERE: key="<< u.id() << " value="<< u.name() << std::endl;
+					++changedCount_where;
+				};
+
+		cql_where.setJoiningListener(join_where);
+		cql_where.setLeavingListener(leave_where);
+		cql_where.setUpdatedListener(change_where);
+		testCache.addContinuousQueryListener(cql_where);
+        r.add([&testCache,&cql_where](){ testCache.removeContinuousQueryListener(cql_where);});
+
+		sample_bank_account::User_Address a;
+		sample_bank_account::User user1;
+		user1.set_id(1);
+		user1.set_name("Tom");
+		user1.set_surname("Cat");
+		user1.set_gender(sample_bank_account::User_Gender_MALE);
+		sample_bank_account::User_Address * addr = user1.add_addresses();
+		addr->set_street("Via Roma");
+		addr->set_number(3);
+		addr->set_postcode("202020");
+		testCache.put(1, user1);
+
+		user1.set_id(2);
+		user1.set_name("Jerry");
+		user1.set_surname("Mouse");
+		user1.set_gender(sample_bank_account::User_Gender_MALE);
+		testCache.put(2, user1);
+
+		user1.set_name("Mickey");
+		testCache.put(2, user1);
+
+		user1.set_age(100);
+		testCache.put(2, user1);
+
+		testCache.remove(2);
+
+		if (std::future_status::timeout
+				== promise.get_future().wait_for(std::chrono::seconds(30))) {
+			std::cout << "FAIL: Continuous query events (Timeout)" << std::endl;
+			return -1;
+		}
+
+		if (createdCount != 2 || changedCount != 2 || removedCount != 1) {
+			std::cout
+			<< "FAIL: (createdCount, changedCount, removedCount) is  ("
+					<< createdCount << ", " << changedCount << ", "
+					<< removedCount << ")" << "  should be (2,2,1)"
+					<< std::endl;
+			return -1;
+		}
 		metadataCache.remove("sample_bank_account/bank.proto");
 	}
+
+	std::cout << "PASS: continuous query" << std::endl;
 	cacheManager.stop();
 	return result;
 
