@@ -40,9 +40,11 @@ private:
 	std::vector<std::function<void()> > cleanups;
 public:
 	~ResourceManager() {
-		for(auto cleanup : cleanups) {
-			cleanup();
-		}
+        while (cleanups.size() > 0)
+        {
+            cleanups.back()();
+            cleanups.pop_back();
+        }
 	}
 	void add(std::function<void()> cleanup)
 	{
@@ -51,7 +53,6 @@ public:
 };
 
 int main(int argc, char** argv) {
-    ResourceManager rMain;
 	int result = 0;
 	std::cout << "Tests for Continuous Query" << std::endl;
 	ConfigurationBuilder builder;
@@ -59,9 +60,8 @@ int main(int argc, char** argv) {
 	builder.protocolVersion(Configuration::PROTOCOL_VERSION_26);
 	builder.balancingStrategyProducer(nullptr);
 	RemoteCacheManager cacheManager(builder.build(), false);
-	cacheManager.start();
-	rMain.add([&cacheManager] {cacheManager.stop(); });
-	//initialize server-side serialization
+
+    //initialize server-side serialization
 	auto *km = new BasicTypesProtoStreamMarshaller<std::string>();
 	auto *vm = new BasicTypesProtoStreamMarshaller<std::string>();
 
@@ -69,15 +69,22 @@ int main(int argc, char** argv) {
 			km, &Marshaller<std::string>::destroy, vm, &Marshaller<std::string>::destroy, PROTOBUF_METADATA_CACHE_NAME,
 			false);
 
-	metadataCache.put("sample_bank_account/bank.proto", read("query_proto/bank.proto"));
+    ResourceManager rMain;
+    cacheManager.start();
+
+    rMain.add([&cacheManager] { cacheManager.stop(); });
+
+    metadataCache.put("sample_bank_account/bank.proto", read("query_proto/bank.proto"));
 	if (metadataCache.containsKey(ERRORS_KEY_SUFFIX))
 			{
 		std::cerr << "fail: error in registering .proto model" << std::endl;
 		result = -1;
 		return result;
 	}
-
-	auto *testkm = new BasicTypesProtoStreamMarshaller<int>();
+    rMain.add([&metadataCache] {
+        metadataCache.remove("sample_bank_account/bank.proto");
+    });
+    auto *testkm = new BasicTypesProtoStreamMarshaller<int>();
 	auto *testvm = new ProtoStreamMarshaller<sample_bank_account::User>();
 	RemoteCache<int, sample_bank_account::User> testCache = cacheManager.getCache<int, sample_bank_account::User>(
 			testkm, &Marshaller<int>::destroy, testvm, &Marshaller<sample_bank_account::User>::destroy, false);
@@ -372,11 +379,9 @@ int main(int argc, char** argv) {
 					<< std::endl;
 			return -1;
 		}
-		metadataCache.remove("sample_bank_account/bank.proto");
 	}
 
 	std::cout << "PASS: continuous query" << std::endl;
-	cacheManager.stop();
 	return result;
 
 }
