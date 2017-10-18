@@ -54,6 +54,7 @@ class Configuration
             int _maxRetries,
             NearCacheConfiguration _nearCacheConfiguration,
             FailOverRequestBalancingStrategy::ProducerFn bsp=0,
+            FailOverRequestBalancingStrategyProducer* bspo=0,
 			const event::EventMarshaller &eventMarshaller = event::JBasicEventMarshaller()):
                 protocolVersion(_protocolVersion), protocolVersionPtr(),
                 connectionPoolConfiguration(_connectionPoolConfiguration),
@@ -62,7 +63,7 @@ class Configuration
                 serversMap(_serversConfiguration),
                 socketTimeout(_socketTimeout), securityConfiguration(_sslConfiguration),tcpNoDelay(_tcpNoDelay),
                 valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), nearCacheConfiguration(_nearCacheConfiguration), balancingStrategyProducer(bsp),
-				eventMarshaller(eventMarshaller)
+                balancingStrategyProducerObj(bspo), eventMarshaller(eventMarshaller)
     {}
 
     Configuration(const std::string &_protocolVersion,
@@ -78,6 +79,7 @@ class Configuration
             int _maxRetries,
             NearCacheConfiguration _nearCacheConfiguration,
             FailOverRequestBalancingStrategy::ProducerFn bsp=0,
+            FailOverRequestBalancingStrategyProducer* bspo=0,
             const event::EventMarshaller &eventMarshaller = event::JBasicEventMarshaller()):
                 protocolVersion(_protocolVersion), protocolVersionPtr(),
                 connectionPoolConfiguration(_connectionPoolConfiguration),
@@ -86,7 +88,7 @@ class Configuration
                 serversMap(_serversConfiguration),
                 socketTimeout(_socketTimeout), securityConfiguration(_securityConfiguration),tcpNoDelay(_tcpNoDelay),
                 valueSizeEstimate(_valueSizeEstimate), maxRetries(_maxRetries), nearCacheConfiguration(_nearCacheConfiguration), balancingStrategyProducer(bsp),
-                eventMarshaller(eventMarshaller)
+                balancingStrategyProducerObj(bspo), eventMarshaller(eventMarshaller)
     {}
 
 
@@ -189,6 +191,8 @@ class Configuration
 
     HR_EXTERN FailOverRequestBalancingStrategy::ProducerFn getBalancingStrategy() const;
 
+    HR_EXTERN FailOverRequestBalancingStrategyProducer* getBalancingStrategyObj() const;
+
     const SslConfiguration& getSslConfiguration() { return securityConfiguration.getSslConfiguration(); }
 
     HR_EXTERN const event::EventMarshaller &getEventMarshaller() const;
@@ -212,6 +216,7 @@ private:
     int maxRetries;
     const NearCacheConfiguration nearCacheConfiguration;
     FailOverRequestBalancingStrategy::ProducerFn balancingStrategyProducer;
+    FailOverRequestBalancingStrategyProducer* balancingStrategyProducerObj;
     const event::EventMarshaller &eventMarshaller;
 
     static void deleteString(std::string *str) { delete str; }

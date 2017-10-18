@@ -47,13 +47,21 @@ void TcpTransportFactory::start(
         initialServers.push_back(InetSocketAddress(iter->getHostCString(), iter->getPort()));
     }
 
-    FailOverRequestBalancingStrategy::ProducerFn producerFn=configuration.getBalancingStrategy();
-    if (producerFn!= nullptr) {
-        balancer.reset((*producerFn)());
+    if (configuration.getBalancingStrategyObj()!=nullptr)
+    {
+        balancer.reset(configuration.getBalancingStrategyObj()->newStrategyInstance());
     }
     else
     {
-        balancer.reset(RoundRobinBalancingStrategy::newInstance());
+        FailOverRequestBalancingStrategy::ProducerFn producerFn=configuration.getBalancingStrategy();
+        if (producerFn!= nullptr)
+        {
+            balancer.reset((*producerFn)());
+        }
+        else
+        {
+            balancer.reset(RoundRobinBalancingStrategy::newInstance());
+        }
     }
     topologyInfo = new TopologyInfo(defaultTopologyId, initialServers, configuration);
 
@@ -146,13 +154,21 @@ bool TcpTransportFactory::clusterSwitch()
         initialServers.push_back(InetSocketAddress(iter->getHostCString(), iter->getPort()));
     }
 
-    auto producerFn=configuration.getBalancingStrategy();
-    if (producerFn!= nullptr) {
-        balancer.reset((*producerFn)());
+    if (configuration.getBalancingStrategyObj()!=nullptr)
+    {
+        balancer.reset(configuration.getBalancingStrategyObj()->newStrategyInstance());
     }
     else
     {
-        balancer.reset(RoundRobinBalancingStrategy::newInstance());
+        FailOverRequestBalancingStrategy::ProducerFn producerFn=configuration.getBalancingStrategy();
+        if (producerFn!= nullptr)
+        {
+            balancer.reset((*producerFn)());
+        }
+        else
+        {
+            balancer.reset(RoundRobinBalancingStrategy::newInstance());
+        }
     }
     topologyInfo->updateServers(initialServers);
 
@@ -178,14 +194,23 @@ bool TcpTransportFactory::clusterSwitch(std::string clusterName)
         initialServers.push_back(InetSocketAddress(iter->getHostCString(), iter->getPort()));
     }
 
-    auto producerFn=configuration.getBalancingStrategy();
-    if (producerFn!= nullptr) {
-        balancer.reset((*producerFn)());
+    if (configuration.getBalancingStrategyObj()!=nullptr)
+    {
+        balancer.reset(configuration.getBalancingStrategyObj()->newStrategyInstance());
     }
     else
     {
-        balancer.reset(RoundRobinBalancingStrategy::newInstance());
+        FailOverRequestBalancingStrategy::ProducerFn producerFn=configuration.getBalancingStrategy();
+        if (producerFn!= nullptr)
+        {
+            balancer.reset((*producerFn)());
+        }
+        else
+        {
+            balancer.reset(RoundRobinBalancingStrategy::newInstance());
+        }
     }
+
     // Consider all the current server as failed
     auto failedServers = topologyInfo->getServers();
     topologyInfo->updateServers(initialServers);

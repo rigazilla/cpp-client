@@ -24,6 +24,13 @@ class FailOverRequestBalancingStrategy
 
 };
 
+class FailOverRequestBalancingStrategyProducer
+{
+  public:
+    virtual ~FailOverRequestBalancingStrategyProducer() {};
+    virtual FailOverRequestBalancingStrategy* newStrategyInstance() = 0;
+};
+
 }} // namespace infinispan::hotrod::transport
 
 #endif  /* ISPN_HOTROD_TRANSPORT_FAILOVERREQUESTBALANCINGSTRATEGY_H */

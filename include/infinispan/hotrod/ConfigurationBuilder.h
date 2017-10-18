@@ -90,6 +90,7 @@ class ConfigurationBuilder
         m_valueSizeEstimate(512),
         m_maxRetries(10),
 		m_balancingStrategyProducer(nullptr),
+        m_balancingStrategyProducerObj(nullptr),
         __pragma(warning(suppress:4355)) // passing uninitialized 'this'
         connectionPoolConfigurationBuilder(*this),
         __pragma(warning(suppress:4355))
@@ -263,6 +264,11 @@ class ConfigurationBuilder
         return *this;
     }
 
+    ConfigurationBuilder& balancingStrategyProducerObject(FailOverRequestBalancingStrategyProducer* bsp) {
+        m_balancingStrategyProducerObj = bsp;
+        return *this;
+    }
+
     /**
      * Build and returns an actual Configuration instance to be used for configuration of
      * RemoteCacheManager.
@@ -310,6 +316,7 @@ class ConfigurationBuilder
             m_maxRetries,
             nearCacheConfigurationBuilder.create(),
             m_balancingStrategyProducer,
+            m_balancingStrategyProducerObj,
             m_eventMarshaller);
 
     }
@@ -348,6 +355,7 @@ class ConfigurationBuilder
     int m_valueSizeEstimate;
     int m_maxRetries;
     FailOverRequestBalancingStrategy::ProducerFn m_balancingStrategyProducer;
+    FailOverRequestBalancingStrategyProducer* m_balancingStrategyProducerObj;
     ConnectionPoolConfigurationBuilder connectionPoolConfigurationBuilder;
     SecurityConfigurationBuilder securityConfigurationBuilder;
     JBasicEventMarshaller m_defaultEventMarshaller;
