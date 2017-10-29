@@ -4,11 +4,11 @@ JDG_REMOTE=jdg
 REDHAT_REMOTE=redhat
 JDG_BRANCH=jdg-7.1.x
 TEMP_BRANCH=__tmp
-VERSION=8.4.0
+VERSION=8.4.1
 
 # dist-git setup
-DIST_GIT_REPO=infinispan-cpp-client
-DIST_GIT_RHEL7_BRANCH=jb-dg-7-rhel-7
+DIST_GIT_REPO=jdg-cpp-client
+DIST_GIT_RHEL7_BRANCH=jb-dg-7.1-rhel-7
 BRANCHES="$DIST_GIT_RHEL7_BRANCH"
 
 USERNAME=`whoami`
