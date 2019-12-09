@@ -227,6 +227,7 @@ endif(WIN32 AND NOT CYGWIN)
 # overridden on a platform specific basis above by NOENABLE_<whatever>
 set (OPTIONS UNDEFINED_ERROR SWIG_TESTING INTERNAL_TESTING VALGRIND)
 
+message("NOENABLE_VALGRIND: ${NOENABLE_VALGRIND}")
 foreach (OPTION ${OPTIONS})
   if (NOT "NOENABLE_${OPTION}")
     set ("DEFAULT_${OPTION}" ON)
