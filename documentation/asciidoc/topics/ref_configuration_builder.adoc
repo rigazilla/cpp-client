@@ -1,0 +1,38 @@
+[id='configuration_builder-{context}']
+= Configuration and Remote Cache Manager APIs
+Use the `ConfigurationBuilder` class to configure {hr_cpp} client connections and the `RemoteCacheManager` to obtain and configure remote caches.
+
+[source,c++,options="nowrap"]
+----
+#include "infinispan/hotrod/ConfigurationBuilder.h"
+#include "infinispan/hotrod/RemoteCacheManager.h"
+#include "infinispan/hotrod/RemoteCache.h"
+#include <stdlib.h>
+using namespace infinispan::hotrod;
+int main(int argc, char** argv) {
+    ConfigurationBuilder b;
+    b.addServer().host("127.0.0.1").port(11222); <1>
+    RemoteCacheManager cm(builder.build());
+    RemoteCache<std::string, std::string> cache = cm.getCache<std::string, std::string>(); <2>
+    return 0;
+}
+----
+<1> Configures the hostname and port of the remote {brandname} cluster.
+<2> Returns a cache.
+
+[source,c++,options="nowrap"]
+----
+ConfigurationBuilder b;
+b.addServer().host("127.0.0.1").port(11222);
+b.addCluster("nyc").addClusterNode("127.0.0.1", 11322); <1>
+----
+<1> Configures cluster name and node for a backup location when using cross-site replication.
+
+[source,c++,options="nowrap"]
+----
+ConfigurationBuilder b;
+b.addServer().host("127.0.0.1").port(11222);
+b.addCluster("nyc").addClusterNode("127.0.0.1", 11322);
+b.nearCache().mode(NearCacheMode::INVALIDATED).maxEntries(4); <1>
+----
+<1> Enables near caching for the {hr_cpp} client.

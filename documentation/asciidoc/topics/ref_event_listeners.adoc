@@ -1,0 +1,39 @@
+[id='event_listeners-{context}']
+= Remote Event Listeners
+Add remote cache listeners with the `add_listener` function on the `ClientCacheListener` to get notifications when cache events occur.
+
+[source,c++,options="nowrap"]
+----
+ConfigurationBuilder builder;
+    builder.balancingStrategyProducer(nullptr);
+builder.addServer().host("127.0.0.1").port(11222);
+builder.protocolVersion(Configuration::PROTOCOL_VERSION_24);
+RemoteCacheManager cacheManager(builder.build(), false);
+cacheManager.start();
+JBasicMarshaller<int> *km = new JBasicMarshaller<int>();
+JBasicMarshaller<std::string> *vm = new JBasicMarshaller<std::string>();
+RemoteCache<int, std::string> cache = cacheManager.getCache<int, std::string>(km,
+    &Marshaller<int>::destroy,
+    vm,
+    &Marshaller<std::string>::destroy);
+cache.clear();
+std::vector<std::vector<char> > filterFactoryParams;
+std::vector<std::vector<char> > converterFactoryParams;
+CacheClientListener<int, std::string> cl(cache);
+int createdCount=0, modifiedCount=0, removedCount=0, expiredCount=0;
+
+// We're using future and promise to have a basic listeners/main thread synch
+int setFutureEventKey=0;
+std::promise<void> promise;
+std::function<void(ClientCacheEntryCreatedEvent<int>)> listenerCreated = [&createdCount, &setFutureEventKey, &promise](ClientCacheEntryCreatedEvent<int> e) { createdCount++; if (setFutureEventKey==e.getKey()) promise.set_value(); };
+std::function<void(ClientCacheEntryModifiedEvent<int>)> listenerModified = [&modifiedCount, &setFutureEventKey, &promise](ClientCacheEntryModifiedEvent <int> e) { modifiedCount++; if (setFutureEventKey==e.getKey()) promise.set_value(); };
+std::function<void(ClientCacheEntryRemovedEvent<int>)> listenerRemoved = [&removedCount, &setFutureEventKey, &promise](ClientCacheEntryRemovedEvent <int> e) { removedCount++; if (setFutureEventKey==e.getKey()) promise.set_value(); };
+std::function<void(ClientCacheEntryExpiredEvent<int>)> listenerExpired = [&expiredCount, &setFutureEventKey, &promise](ClientCacheEntryExpiredEvent <int> e) { expiredCount++; if (setFutureEventKey==e.getKey()) promise.set_value(); };
+
+cl.add_listener(listenerCreated);
+cl.add_listener(listenerModified);
+cl.add_listener(listenerRemoved);
+cl.add_listener(listenerExpired);
+
+cache.addClientListener(cl, filterFactoryParams, converterFactoryParams);
+----

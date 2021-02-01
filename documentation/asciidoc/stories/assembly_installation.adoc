@@ -1,0 +1,28 @@
+[id='hr_client_installation']
+:context: install
+= Installing the {hr_cpp} client
+Install the {hr_cpp} client either as a static or dynamic library on your host system.
+
+.Static library
+Installing the {hr_cpp} client as a static library means you include the client as part of your application, which means it is self-contained but has an overall larger size.
+
+.Dynamic library
+Installing the {hr_cpp} client as a dynamic library links the {hr_cpp} client to your application at runtime so you can upgrade the client without having to recompile your application.
+However, you the {hr_cpp} client library must always be binary compatible with your application.
+
+//Product
+ifdef::productized[]
+[NOTE]
+====
+To keep binary compatibility, the major version of the {hr_cpp} client library cannot change between upgrades without recompiling your application.
+====
+endif::productized[]
+
+include::{topics}/ref_installation_prerequisites.adoc[leveloffset=+1]
+include::{topics}/proc_installing_client_nix.adoc[leveloffset=+1]
+include::{topics}/proc_installing_client_win.adoc[leveloffset=+1]
+
+
+// Restore the parent context.
+ifdef::parent-context[:context: {parent-context}]
+ifndef::parent-context[:!context:]
