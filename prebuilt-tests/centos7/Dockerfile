@@ -4,7 +4,7 @@ RUN yum -y install \
    wget \
    cmake \
    iputils \
-   java-1.8.0-openjdk-devel \
+   java-11-openjdk-devel \
    openssl-devel \
    rpmdevtools \
    tar \
