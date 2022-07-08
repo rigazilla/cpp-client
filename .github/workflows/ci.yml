@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: mkdir artifacts
       - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
-      - run: podman run -v `pwd`/artifacts:/home/jboss/artifacts quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c 'git clone https://github.com/rigazilla/cpp-client.git -b github-action && ls && cd cpp-client && INFINISPAN_VERSION=13.0.10.Final ./build.sh && cp build/*.rpm artifacts'
+      - run: podman run -v `pwd`/artifacts:/home/jboss/artifacts quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c 'mkdir build && chmod a+rwx . build documentation && INFINISPAN_VERSION=13.0.10.Final ./build.sh'
       - name: upload linux artifact
         uses: actions/upload-release-asset@v1
         env:
