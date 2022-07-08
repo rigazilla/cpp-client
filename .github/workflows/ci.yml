@@ -1,6 +1,7 @@
 name: infinispan-netcore-tests
 env:
   ISPN_VER: '13.0.10.Final'
+on:
   push:
     tags:
     - '*'
