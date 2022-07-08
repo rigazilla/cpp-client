@@ -7,4 +7,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
       - run: podman run -v /home/rigazilla/git/tmp:/home/jboss/artifacts:rw  -it quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c 'git clone https://github.com/infinispan/cpp-client.git && ls && cd cpp-client && INFINISPAN_VERSION=13.0.10.Final ./build.sh'
