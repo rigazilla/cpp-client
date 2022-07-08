@@ -10,3 +10,11 @@ jobs:
       - run: mkdir artifacts
       - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
       - run: podman run -v `pwd`/artifacts:/home/jboss/artifacts quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c 'git clone https://github.com/infinispan/cpp-client.git && ls && cd cpp-client && INFINISPAN_VERSION=13.0.10.Final ./build.sh && cp build/*.rpm artifacts'
+      - name: upload linux artifact
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./build/infinispan-hotrod-cpp-8.1.0.SNAPSHOT-RHEL-x86_64.rpm
+          asset_name: cpp-client.rpm
