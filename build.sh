@@ -77,7 +77,6 @@ else
   echo CXXFLAGS="-Wno-error=maybe-uninitialized" cmake ${CMAKE_EXTRAS} .. &&
   CXXFLAGS="-Wno-error=maybe-uninitialized" cmake ${CMAKE_EXTRAS} .. &&
   cmake --build . &&
-  ctest -V &&
   cpack -G RPM &&
   cpack -C RelWithDebInfo --config CPackSourceConfig.cmake -G ZIP
 fi
