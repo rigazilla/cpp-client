@@ -1,7 +1,9 @@
 name: infinispan-netcore-tests
 env:
   ISPN_VER: '13.0.10.Final'
-on: [push, pull_request]
+  push:
+    tags:
+    - '*'
 jobs:
   run-ci-tests:
     runs-on: ubuntu-latest
@@ -10,11 +12,7 @@ jobs:
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
       - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c 'cd cpp-client && INFINISPAN_VERSION=13.0.10.Final ./build.sh'
-      - name: upload linux artifact
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      - uses: ncipollo/release-action@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/infinispan-hotrod-cpp-8.1.0.SNAPSHOT-RHEL-x86_64.rpm
-          asset_name: cpp-client.rpm
+          artifacts: "build/*.rpm"
+          token: ${{ secrets.GITHUB_TOKEN }}
