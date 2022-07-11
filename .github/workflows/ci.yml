@@ -39,4 +39,5 @@ jobs:
           set SWIG_DIR=C:\ProgramData\Chocolatey\bin
           set SWIG_EXECUTABLE=C:\ProgramData\Chocolatey\bin\swig.exe
           set MVN_PROGRAM=C:\ProgramData\chocolatey\lib\maven\apache-maven-3.8.6\bin\mvn
+          set INFINISPAN_VERSION=13.0.10.Final
           build.bat
