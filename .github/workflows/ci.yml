@@ -40,7 +40,7 @@ jobs:
           mkdir libs
           cd protobuf
           mkdir build && cd build
-          cmake -G "Visual Studio 16 2019" -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\libs -Dprotobuf_BUILD_TESTS=OFF ${{ github.workspace }}\protobuf\cmake
+          cmake -G "Visual Studio 17 2022" -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\libs -Dprotobuf_BUILD_TESTS=OFF ${{ github.workspace }}\protobuf\cmake
           cmake --build . --target install
 
 #      - shell: cmd
