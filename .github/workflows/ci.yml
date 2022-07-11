@@ -48,7 +48,7 @@ jobs:
           where mvn
           where java
           dir C:\ProgramData\Chocolatey\tools
-          set generator="Visual Studio 14 2015 Win64"
+          set generator="Visual Studio 17 2022"
           set JAVA_HOME="C:\Program Files\Microsoft\jdk-11.0.12.7-hotspot"
           set SWIG_DIR=C:\ProgramData\Chocolatey\bin
           set SWIG_EXECUTABLE=C:\ProgramData\Chocolatey\bin\swig.exe
