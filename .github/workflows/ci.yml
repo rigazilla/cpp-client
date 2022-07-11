@@ -33,8 +33,10 @@ jobs:
           where swig
           where mvn
           where java
-          set JAVA_HOME=C:\PROGRA~1\JAVA\JDK18~1.0_9
+          dir C:\ProgramData\Chocolatey
+          set generator="Visual Studio 14 2015 Win64"
+          set JAVA_HOME=C:\Program Files\Microsoft\jdk-11.0.12.7-hotspot
           set SWIG_DIR=c:\users\rigazilla\swigwin-3.0.12
-          set SWIG_EXECUTABLE=c:\Users\rigazilla\swigwin-3.0.12\swig.exe
-          set MVN_PROGRAM=c:\Users\rigazilla\apache-maven-3.3.9\bin\mvn
+          set SWIG_EXECUTABLE=C:\ProgramData\Chocolatey\bin\swig.exe
+          set MVN_PROGRAM=C:\ProgramData\chocolatey\lib\maven\apache-maven-3.8.6\bin\mvn
           build.bat
