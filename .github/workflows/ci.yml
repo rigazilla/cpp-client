@@ -24,15 +24,15 @@ jobs:
   run-ci-tests-win:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v4
-      - run: echo $GITHUB_REF_NAME
       - name: Run vcpkg
         uses: lukka/run-vcpkg@v4
         with:
           vcpkgArguments: "install protobuf protobuf:x64-windows"
           vcpkgDirectory: "${{ github.workspace }}/vcpkg"
+      - uses: actions/checkout@v2
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
+      - run: echo $GITHUB_REF_NAME
       - shell: cmd
         run: |
           where swig
