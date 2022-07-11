@@ -28,5 +28,13 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v4
       - run: echo $GITHUB_REF_NAME
-      - run: build.bat
-        shell: cmd
+      - shell: cmd
+        run: |
+          where swig
+          where mvn
+          where java
+          set JAVA_HOME=C:\PROGRA~1\JAVA\JDK18~1.0_9
+          set SWIG_DIR=c:\users\rigazilla\swigwin-3.0.12
+          set SWIG_EXECUTABLE=c:\Users\rigazilla\swigwin-3.0.12\swig.exe
+          set MVN_PROGRAM=c:\Users\rigazilla\apache-maven-3.3.9\bin\mvn
+          build.bat
