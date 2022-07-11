@@ -56,6 +56,6 @@ jobs:
           set PROTOBUF_LIBRARY=${{ github.workspace }}\libs\lib\libprotobufd.lib
           set PROTOBUF_PROTOC_EXECUTABLE=${{ github.workspace }}\libs\bin\protoc.exe
           set PROTOBUF_PROTOC_LIBRARY=${{ github.workspace }}\libs\lib\libprotocd.lib
-          set PROTOBUF_INCLUDE_DIR =${{ github.workspace }}\libs\include
+          set PROTOBUF_INCLUDE_DIR=${{ github.workspace }}\libs\include
           set INFINISPAN_VERSION=13.0.10.Final
           build.bat
