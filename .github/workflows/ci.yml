@@ -1,15 +1,17 @@
 name: infinispan-netcore-tests
 env:
-  ISPN_VER: '13.0.10.Final'
+  ISPN_VER: "13.0.10.Final"
+  CLIENT_VERSION: echo ${{ github.event.release.tag_name }}
 on:
   push:
     tags:
-    - '*'
+      - "*"
 jobs:
   run-ci-tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - run: echo $CLIENT_VERSION
       - run: mkdir build && chmod a+rwx . documentation build
       - run: podman build -t quay.io/rigazilla/ci-build-centos-8:latest -f ci-build/centos-stream8.Dockerfile .
       - run: podman run -v `pwd`:/home/jboss/cpp-client quay.io/rigazilla/ci-build-centos-8:latest /bin/bash -c 'cd cpp-client && INFINISPAN_VERSION=13.0.10.Final ./build.sh'
