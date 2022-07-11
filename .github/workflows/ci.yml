@@ -42,17 +42,16 @@ jobs:
           mkdir build && cd build
           cmake -G "Visual Studio 17 2022" -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\libs -Dprotobuf_BUILD_TESTS=OFF ${{ github.workspace }}\protobuf\cmake
           cmake --build . --target install
-
-#      - shell: cmd
-#        run: |
-#          where swig
-#          where mvn
-#          where java
-#          dir C:\ProgramData\Chocolatey\tools
-#          set generator="Visual Studio 14 2015 Win64"
-#          set JAVA_HOME="C:\Program Files\Microsoft\jdk-11.0.12.7-hotspot"
-#          set SWIG_DIR=C:\ProgramData\Chocolatey\bin
-#          set SWIG_EXECUTABLE=C:\ProgramData\Chocolatey\bin\swig.exe
-#          set MVN_PROGRAM=C:\ProgramData\chocolatey\lib\maven\apache-maven-3.8.6\bin\mvn
-#          set INFINISPAN_VERSION=13.0.10.Final
-#          build.bat
+      - shell: cmd
+        run: |
+          where swig
+          where mvn
+          where java
+          dir C:\ProgramData\Chocolatey\tools
+          set generator="Visual Studio 14 2015 Win64"
+          set JAVA_HOME="C:\Program Files\Microsoft\jdk-11.0.12.7-hotspot"
+          set SWIG_DIR=C:\ProgramData\Chocolatey\bin
+          set SWIG_EXECUTABLE=C:\ProgramData\Chocolatey\bin\swig.exe
+          set MVN_PROGRAM=C:\ProgramData\chocolatey\lib\maven\apache-maven-3.8.6\bin\mvn
+          set INFINISPAN_VERSION=13.0.10.Final
+          build.bat
