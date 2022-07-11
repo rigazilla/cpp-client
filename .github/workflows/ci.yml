@@ -53,9 +53,9 @@ jobs:
           set SWIG_DIR=C:\ProgramData\Chocolatey\bin
           set SWIG_EXECUTABLE=C:\ProgramData\Chocolatey\bin\swig.exe
           set MVN_PROGRAM=C:\ProgramData\chocolatey\lib\maven\apache-maven-3.8.6\bin\mvn
-          set PROTOBUF_LIBRARY=${{ github.workspace }}\libs\lib\libprotobufd.lib
+          set PROTOBUF_LIBRARY=${{ github.workspace }}\libs\lib\libprotobuf.lib
           set PROTOBUF_PROTOC_EXECUTABLE=${{ github.workspace }}\libs\bin\protoc.exe
-          set PROTOBUF_PROTOC_LIBRARY=${{ github.workspace }}\libs\lib\libprotocd.lib
+          set PROTOBUF_PROTOC_LIBRARY=${{ github.workspace }}\libs\lib\libprotoc.lib
           set PROTOBUF_INCLUDE_DIR=${{ github.workspace }}\libs\include
           set INFINISPAN_VERSION=13.0.10.Final
           build.bat
