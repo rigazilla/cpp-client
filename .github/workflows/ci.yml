@@ -28,6 +28,11 @@ jobs:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v4
       - run: echo $GITHUB_REF_NAME
+      - name: Run vcpkg
+        uses: lukka/run-vcpkg@v4
+        with:
+          vcpkgArguments: "install protobuf protobuf:x64-windows"
+          vcpkgDirectory: "${{ github.workspace }}/vcpkg"
       - shell: cmd
         run: |
           where swig
