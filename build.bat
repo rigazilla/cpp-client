@@ -1,6 +1,5 @@
 @echo on
 if [%generator%] == [] call:usage generator
-if [%JAVA_HOME%] == [] call:usage JAVA_HOME
 if [%INFINISPAN_VERSION%] == [] call:usage INFINISPAN_VERSION
 if [%SWIG_DIR%] == [] call:usage SWIG_DIR
 if [%SWIG_EXECUTABLE%] == [] call:usage SWIG_EXECUTABLE
@@ -28,7 +27,7 @@ goto:eof
 setlocal
 set build_dir=build_win
 
-set PATH=%JAVA_HOME%\bin;%PATH%
+rem set PATH=%JAVA_HOME%\bin;%PATH%
 echo "Using JAVA_HOME=%JAVA_HOME%"
 
 if exist %build_dir% rmdir %build_dir% /s /q
