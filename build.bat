@@ -1,3 +1,4 @@
+@echo on
 if [%generator%] == [] call:usage generator
 if [%JAVA_HOME%] == [] call:usage JAVA_HOME
 if [%INFINISPAN_VERSION%] == [] call:usage INFINISPAN_VERSION
@@ -17,7 +18,7 @@ if not exist %JBOSS_HOME% (
    )
 "C:\Program Files\7-zip\7z.exe" x %JBOSS_ZIP% 
 )
-copy test\data\*.* %JBOSS_HOME%\server\conf
+copy test\data\*.* %JBOSS_HOME%\server\conf /y
 xcopy /E /I /Y %JBOSS_HOME%\server %JBOSS_HOME%\server1\
 
 call:do_build %generator%
@@ -98,6 +99,7 @@ goto:eof
 :fail
     subst /D Y:
     echo "Failure!"
+    @echo off
     ()
     exit /b 1
 :eof
