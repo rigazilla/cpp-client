@@ -30,8 +30,8 @@ jobs:
       - run: echo $GITHUB_REF_NAME
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.1
-        with:
-          vs-version: "[17.0,17.2)"
+      #        with:
+      #          vs-version: "[17.0,17.2)"
       - name: Build Protobuf
         shell: cmd
         run: |
