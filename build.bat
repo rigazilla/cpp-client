@@ -21,6 +21,10 @@ if not exist %JBOSS_HOME% (
 copy test\data\*.* %JBOSS_HOME%\server\conf /y
 xcopy /E /I /Y %JBOSS_HOME%\server %JBOSS_HOME%\server1\
 
+    ()
+    exit /b 1
+
+
 call:do_build %generator%
 goto:eof
 

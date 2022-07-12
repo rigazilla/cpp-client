@@ -63,6 +63,5 @@ jobs:
           set PROTOBUF_PROTOC_LIBRARY=${{ github.workspace }}\libs\lib\libprotoc.lib
           set PROTOBUF_INCLUDE_DIR=${{ github.workspace }}\libs\include
           set INFINISPAN_VERSION=13.0.10.Final
+          build.bat
           ${{ github.workspace }}\infinispan-server-13.0.10.Final\bin\server.bat -c infinispan.xml
-
-#          build.bat
