@@ -21,6 +21,7 @@ jobs:
         with:
           artifacts: "build/*.rpm,builddeb/*.deb"
           token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
   run-ci-tests-win:
     runs-on: windows-latest
     steps:
@@ -71,3 +72,4 @@ jobs:
         with:
           artifacts: "build_win/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
+          allowUpdates: true
